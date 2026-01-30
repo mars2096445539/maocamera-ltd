@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - maocamera ltd</title>
+    <link rel="stylesheet" href="../styles.css">
+    
+    <style>
+        .success-container {
+            max-width: 600px;
+            margin: 100px auto;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        /* 成功图标：使用简单的 CSS 绘制一个绿圈勾 */
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background-color: #5e9c64; /* 你的加购按钮绿色 */
+            color: white;
+            font-size: 50px;
+            line-height: 80px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        h2 { font-weight: 900; font-size: 2rem; margin-bottom: 10px; }
+        p { color: #666; margin-bottom: 40px; }
+
+        .back-home-btn {
+            display: inline-block;
+            background: #000;
+            color: #fff;
+            padding: 15px 40px;
+            border-radius: 30px; /* 保持 30px 大圆角一致性 */
+            text-decoration: none;
+            font-weight: 800;
+            transition: transform 0.2s;
+        }
+
+        .back-home-btn:hover { transform: scale(1.05); }
+    </style>
+
+    <script src="/js/badge-header.js"></script>
+</head>
+<body>
+
+    <div id="badge-header-placeholder"></div>
+
+    <main class="success-container">
+        <div class="success-icon">✓</div>
+        <h2>THANK YOU!</h2>
+        <p>Your payment has been processed successfully.<br>
+           An order confirmation has been sent to your email.</p>
+        
+        <a href="/" class="back-home-btn">CONTINUE SHOPPING</a>
+    </main>
+
+    <script>
+        /**
+         * 核心逻辑：清空购物车
+         */
+        document.addEventListener('DOMContentLoaded', () => {
+            // 1. 支付成功后，彻底移除本地存储中的购物车数据
+            localStorage.removeItem('maocamera_cart');
+            
+            // 2. 强制刷新顶部角标，让它显示为空（或消失）
+            if (window.syncCartBadge) {
+                window.syncCartBadge();
+            }
+        });
+    </script>
+</body>
+</html>

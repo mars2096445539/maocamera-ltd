@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Detail - maocamera ltd</title>
+    <link rel="stylesheet" href="../styles.css">
+    
+    <script src="/js/badge-header.js"></script>
+    <script src="../js/cart-logic.js"></script>
+
+    <style>
+        .detail-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        .product-header { display: flex; gap: 50px; flex-wrap: wrap; margin-bottom: 50px; }
+        .product-gallery { flex: 1; min-width: 300px; }
+        .product-gallery img { width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .product-main-info { flex: 1; min-width: 300px; }
+        .brand-tag { color: #888; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; }
+        .product-title { font-size: 2.5rem; margin: 10px 0; }
+        .price-tag { font-size: 1.8rem; color: #007bff; font-weight: 700; margin: 20px 0; }
+        .spec-mini-table { border-top: 1px solid #eee; padding-top: 20px; }
+        .spec-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; }
+        .spec-label { color: #666; font-weight: 500; }
+        .detail-section { margin-top: 60px; border-top: 1px solid #eee; padding-top: 40px; }
+        .detail-section h4 { text-align: center; letter-spacing: 5px; margin-bottom: 30px; color: #333; }
+        #imageStrip img { width: 100%; display: block; margin-bottom: 10px; }
+        .error-msg { text-align: center; padding: 100px 0; font-size: 1.2rem; color: #999; }
+    </style>
+</head>
+<body>
+    <div id="badge-header-placeholder"></div>
+
+    <main class="detail-container" id="mainContent">
+        <div id="productHeader" class="product-header">
+            <p>Loading product information...</p>
+        </div>
+
+        <section class="detail-section">
+            <h4>DESCRIPTION</h4>
+            <div id="imageStrip"></div>
+        </section>
+    </main>
+
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const productId = params.get('id');
+    const mainContent = document.getElementById('mainContent');
+
+    if (!productId) {
+        mainContent.innerHTML = '<div class="error-msg">No product ID. Go back to <a href="equipment-store.html">Store</a>.</div>';
+    } else {
+        // 确保路径正确：/pages/ 下去取 ../data/
+        fetch('../data/products.json')
+            .then(res => res.json())
+            .then(data => {
+                const product = data.find(p => p.id === productId);
+                if (product) render(product);
+                else mainContent.innerHTML = `<div class="error-msg">Product not found.</div>`;
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                mainContent.innerHTML = '<div class="error-msg">Error loading data. Check console.</div>';
+            });
+    }
+
+    function render(p) {
+        document.title = `${p.name} - maocamera ltd`;
+        
+        document.getElementById('productHeader').innerHTML = `
+            <div class="product-gallery">
+                <img src="${p.cover_image}" alt="${p.name}">
+            </div>
+            <div class="product-main-info">
+                <div class="brand-tag">${p.brand}</div>
+                <h2 class="product-title">${p.name}</h2>
+                <div class="price-tag">$${p.price}</div>
+                
+                <div style="display: flex; gap: 15px; margin: 30px 0;">
+                    <button id="addToCartBtn" class="email-button" style="flex: 1; background-color: #333; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; cursor: pointer;">
+                        ADD TO CART
+                    </button>
+                    <button id="buyNowBtn" class="email-button" style="flex: 1; background-color: #007bff; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; cursor: pointer;">
+                        PAY NOW
+                    </button>
+                </div>
+                <div class="spec-mini-table">
+                    ${Object.entries(p.specs).map(([key, value]) => `
+                        <div class="spec-item">
+                            <span class="spec-label">${key.replace('_', ' ').toUpperCase()}</span>
+                            <span>${value}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+
+        const imageStrip = document.getElementById('imageStrip');
+        if (p.detail_images) {
+            imageStrip.innerHTML = p.detail_images.map(img => `<img src="${img}">`).join('');
+        }
+
+        // --- 核心：这里调用 silent 版的 addToCart ---
+        document.getElementById('addToCartBtn').onclick = () => {
+            addToCart(p); 
+            // 注意：这里不要再写 alert，addToCart 内部会自动通知 Header 更新
+        };
+
+        document.getElementById('buyNowBtn').onclick = async () => {
+            const instantItem = [{ id: p.id, name: p.name, price: parseFloat(p.price), quantity: 1 }];
+            const res = await fetch('/api/create-checkout-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ items: instantItem })
+            });
+            const session = await res.json();
+            if (session.url) window.location.href = session.url;
+        };
+    }
+</script>
+</body>
+</html>
