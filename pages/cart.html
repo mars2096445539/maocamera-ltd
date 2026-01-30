@@ -37,7 +37,7 @@
                     <strong id="totalDisplay">$0.00</strong>
                 </div>
                 
-                <button id="checkoutBtn" class="checkout-button">CHECKOUT</button>
+                <button id="checkoutBtn" class="checkout-button">CHECKING STOCK...</button>
                 <p class="tax-location">Taxes calculated for Urbana, IL 61801</p>
             </div>
         </aside>
@@ -45,10 +45,60 @@
 </main>
 
 <script>
-// 完全恢复你之前的渲染逻辑，确保商品不消失
+/**
+ * 核心：全局库存校验
+ * 遍历购物车，只要有一件商品 canPurchase 为 false，就锁死按钮
+ */
+async function checkCartValidity() {
+    const cart = JSON.parse(localStorage.getItem('maocamera_cart')) || [];
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    
+    if (cart.length === 0) {
+        checkoutBtn.disabled = true;
+        checkoutBtn.innerText = "CHECKOUT";
+        return;
+    }
+
+    let allInStock = true;
+    let outOfStockItem = "";
+
+    try {
+        for (const item of cart) {
+            // 带有时间戳 t 的请求，确保拿到 Redis 最新的数字
+            const res = await fetch(`/api/get-stock?name=${encodeURIComponent(item.name)}&t=${Date.now()}`);
+            const data = await res.json();
+            
+            if (!data.canPurchase) {
+                allInStock = false;
+                outOfStockItem = item.name;
+                break;
+            }
+        }
+
+        if (!allInStock) {
+            // 物理锁死按钮，应用灰色样式
+            checkoutBtn.disabled = true;
+            checkoutBtn.style.backgroundColor = "#666";
+            checkoutBtn.style.cursor = "not-allowed";
+            checkoutBtn.innerText = "MAINTENANCE / SOLD OUT";
+            console.warn(`Item out of stock: ${outOfStockItem}`);
+        } else {
+            // 恢复正常
+            checkoutBtn.disabled = false;
+            checkoutBtn.style.backgroundColor = ""; 
+            checkoutBtn.style.cursor = "pointer";
+            checkoutBtn.innerText = "CHECKOUT";
+        }
+    } catch (err) {
+        console.error("Stock check failed:", err);
+        checkoutBtn.innerText = "SERVICE UNAVAILABLE";
+    }
+}
+
 function updateCartAndUI(cart) {
     localStorage.setItem('maocamera_cart', JSON.stringify(cart));
     renderCart();
+    checkCartValidity(); // 每次变动数量后重新校验
     if (window.syncCartBadge) window.syncCartBadge(); 
 }
 
@@ -72,7 +122,7 @@ function renderCart() {
                 <img src="${item.cover_image || '/api/placeholder/100/100'}" class="cart-item-img">
                 <div class="cart-item-info">
                     <div class="cart-item-name">${item.name}</div>
-                    <div class="cart-item-stock">In Stock</div>
+                    <div class="cart-item-stock">Checked Live</div>
                     <div class="quantity-controls">
                         <button onclick="changeQty(${index}, -1)" class="qty-btn">-</button>
                         <span class="qty-num">${item.quantity}</span>
@@ -89,7 +139,7 @@ function renderCart() {
 }
 
 function calculateTotals(subtotal) {
-    const taxRate = 0.09; 
+    const taxRate = 0.09; // Urbana, IL 税率
     const tax = subtotal * taxRate;
     const total = subtotal + tax;
     document.getElementById('subtotalDisplay').innerText = `$${subtotal.toFixed(2)}`;
@@ -102,7 +152,6 @@ async function changeQty(index, delta) {
     const item = cart[index];
     if (!item) return;
 
-    // 1. 如果是减少数量，直接减（最低为 1），不需要查库存
     if (delta < 0) {
         item.quantity += delta;
         if (item.quantity < 1) item.quantity = 1;
@@ -110,25 +159,19 @@ async function changeQty(index, delta) {
         return;
     }
 
-    // 2. 如果是增加数量，必须先问问 KV 数据库
     try {
-        // 加上时间戳 t 防止浏览器缓存旧的库存结果
         const response = await fetch(`/api/get-stock?name=${encodeURIComponent(item.name)}&t=${Date.now()}`);
         const stockData = await response.json();
 
-        // 3. 核心校验：如果购物车现有量 + 1 > 数据库实时库存
         if (item.quantity + 1 > stockData.stock) {
-            alert(`Sorry, maocamera ltd currently only has ${stockData.stock} units of this item in stock.`);
-            return; // 拦截，不更新 UI
+            alert(`Sorry, maocamera ltd currently only has ${stockData.stock} units of this item.`);
+            return; 
         }
 
-        // 4. 库存充足，执行增加
         item.quantity += 1;
         updateCartAndUI(cart);
-
     } catch (err) {
-        console.error("Stock check failed:", err);
-        alert("Unable to verify stock. Please try again later.");
+        alert("Unable to verify stock.");
     }
 }
 
@@ -138,12 +181,12 @@ function removeItem(index) {
     updateCartAndUI(cart);
 }
 
-// 支付按钮逻辑
+// 支付按钮点击逻辑
 document.getElementById('checkoutBtn').onclick = async () => {
-    const currentCart = JSON.parse(localStorage.getItem('maocamera_cart')) || [];
-    if (currentCart.length === 0) return alert("Your cart is empty");
-
     const btn = document.getElementById('checkoutBtn');
+    if (btn.disabled) return;
+
+    const currentCart = JSON.parse(localStorage.getItem('maocamera_cart')) || [];
     btn.innerText = "PROCESSING...";
     btn.disabled = true;
 
@@ -154,25 +197,24 @@ document.getElementById('checkoutBtn').onclick = async () => {
             body: JSON.stringify({ items: currentCart })
         });
 
-        // 核心修复：如果后端报错（如 400），抓取错误信息并抛出
         if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || "Stock or Server Error");
+            throw new Error(errorData.error || "Checkout failed");
         }
 
         const session = await response.json();
-        if (session.url) {
-            window.location.href = session.url;
-        }
+        if (session.url) window.location.href = session.url;
     } catch (err) {
-        // 报错后弹出具体原因，并恢复按钮
         alert("Checkout Failed: " + err.message);
         btn.innerText = "CHECKOUT";
         btn.disabled = false;
     }
 };
 
-document.addEventListener('DOMContentLoaded', renderCart);
+document.addEventListener('DOMContentLoaded', () => {
+    renderCart();
+    checkCartValidity(); // 初始加载即检查
+});
 </script>
 </body>
 </html>

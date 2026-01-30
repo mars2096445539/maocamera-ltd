@@ -63,41 +63,49 @@
             });
     }
 
-    function render(p) {
-        document.title = `${p.name} - maocamera ltd`;
-        
-        document.getElementById('productHeader').innerHTML = `
-            <div class="product-gallery">
-                <img src="${p.cover_image}" alt="${p.name}">
-            </div>
-            <div class="product-main-info">
-                <div class="brand-tag">${p.brand}</div>
-                <h2 class="product-title">${p.name}</h2>
-                <div class="price-tag">$${p.price}</div>
-                
-                <div style="display: flex; gap: 15px; margin: 30px 0;">
-                    <button id="addToCartBtn" class="email-button" style="flex: 1; background-color: #333; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; cursor: pointer;">
-                        ADD TO CART
-                    </button>
-                    <button id="buyNowBtn" class="email-button" style="flex: 1; background-color: #007bff; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; cursor: pointer;">
-                        PAY NOW
-                    </button>
-                </div>
-                <div class="spec-mini-table">
-                    ${Object.entries(p.specs).map(([key, value]) => `
-                        <div class="spec-item">
-                            <span class="spec-label">${key.replace('_', ' ').toUpperCase()}</span>
-                            <span>${value}</span>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
+async function render(p) {
+    document.title = `${p.name} - maocamera ltd`;
+    
+    // 1. 在显示按钮前，实时检查库存状态
+    let canPurchase = true;
+    try {
+        const stockRes = await fetch(`/api/get-stock?name=${encodeURIComponent(p.name)}&t=${Date.now()}`);
+        const stockData = await stockRes.json();
+        canPurchase = stockData.canPurchase; // 获取我们在 get-stock.js 里写的布尔值
+    } catch (e) {
+        console.error("库存检查失败", e);
+    }
 
-        const imageStrip = document.getElementById('imageStrip');
-        if (p.detail_images) {
-            imageStrip.innerHTML = p.detail_images.map(img => `<img src="${img}">`).join('');
-        }
+    // 2. 根据 canPurchase 状态动态设置按钮样式
+    const btnStyle = canPurchase 
+        ? "cursor: pointer; opacity: 1;" 
+        : "cursor: not-allowed; opacity: 0.5; background-color: #666 !important;";
+    const btnText = canPurchase ? "PAY NOW" : "SOLD OUT / MAINTENANCE";
+
+    document.getElementById('productHeader').innerHTML = `
+        <div class="product-gallery">
+            <img src="${p.cover_image}" alt="${p.name}">
+        </div>
+        <div class="product-main-info">
+            <div class="brand-tag">${p.brand}</div>
+            <h2 class="product-title">${p.name}</h2>
+            <div class="price-tag">$${p.price}</div>
+            
+            <div style="display: flex; gap: 15px; margin: 30px 0;">
+                <button id="addToCartBtn" class="email-button" ${!canPurchase ? 'disabled' : ''} 
+                    style="flex: 1; background-color: #333; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; ${btnStyle}">
+                    ADD TO CART
+                </button>
+                <button id="buyNowBtn" class="email-button" ${!canPurchase ? 'disabled' : ''} 
+                    style="flex: 1; background-color: #007bff; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; ${btnStyle}">
+                    ${btnText}
+                </button>
+            </div>
+            </div>
+    `;
+
+    // ... 后续的 onclick 绑定逻辑保持不变 ...
+}
 
         // --- 核心：这里调用 silent 版的 addToCart ---
         document.getElementById('addToCartBtn').onclick = () => {
