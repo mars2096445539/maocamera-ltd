@@ -1,41 +1,42 @@
-// 使用纯 Node.js 写法，彻底解决 image_2cd4e9.png 的模块缺失报错
+// 使用 Node.js 原生模块读取文件
 const { createClient } = require('redis');
+const fs = require('fs');
+const path = require('path');
 
 module.exports = async (req, res) => {
-  // 自动兼容你之前设置的各种变量名
   const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
   const client = createClient({ url: redisUrl });
 
   try {
+    // 1. 定位并读取你的 products.json 文件
+    // 路径指向 C:\maocamera公司\网站\maocamera-ltd\data\products.json
+    const jsonPath = path.join(process.cwd(), 'data', 'products.json');
+    const fileContent = fs.readFileSync(jsonPath, 'utf8');
+    const products = JSON.parse(fileContent);
+
     await client.connect();
 
-    // maocamera ltd 官方 11 件商品清单
-    const products = {
-      "XB-2R BALLHEAD": 0,
-      "XB-1R BALLHEAD": 0,
-      "SV35 FLUIDHEAD": 0,
-      "MD-3 GEARHEAD": 0,
-      "MD-4 GEARHEAD": 0,
-      "PT-14 BALLHEAD COMBO": 0,
-      "PT-24 BALLHEAD COMBO": 0,
-      "MT-24 TRIPOD ONLY": 0,
-      "XT-15 BALLHEAD COMBO": 0,
-      "MT-34 TRIPOD ONLY": 0,
-      "MT-33S TRIPOD ONLY": 0
-    };
-
-    // 批量录入 Redis
-    for (const [name, stock] of Object.entries(products)) {
-      await client.set(`stock:${name}`, stock.toString());
+    // 2. 遍历 JSON 里的 11 件商品并同步到 Redis
+    const results = [];
+    for (const p of products) {
+      // 这里的 p.name 必须和你数据库的 key 对应
+      await client.set(`stock:${p.name}`, p.stock.toString());
+      results.push(`${p.name}: ${p.stock}`);
     }
 
     await client.quit();
+
     res.status(200).json({ 
       success: true, 
-      message: "maocamera ltd 11款产品库存已全部同步成功！" 
+      message: "maocamera ltd 数据库已与 JSON 完成同步！",
+      syncedItems: results 
     });
 
   } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+    res.status(500).json({ 
+      success: false, 
+      error: "同步失败，请检查 products.json 路径或格式", 
+      details: error.message 
+    });
   }
 };
