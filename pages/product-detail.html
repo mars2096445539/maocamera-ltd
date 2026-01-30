@@ -1,10 +1,14 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en-US">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Detail - maocamera ltd</title>
     <link rel="stylesheet" href="../styles.css">
+    
+    <script src="/js/badge-header.js"></script>
+    <script src="../js/cart-logic.js"></script>
+
     <style>
         .detail-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
         .product-header { display: flex; gap: 50px; flex-wrap: wrap; margin-bottom: 50px; }
@@ -21,69 +25,14 @@
         .detail-section h4 { text-align: center; letter-spacing: 5px; margin-bottom: 30px; color: #333; }
         #imageStrip img { width: 100%; display: block; margin-bottom: 10px; }
         .error-msg { text-align: center; padding: 100px 0; font-size: 1.2rem; color: #999; }
-
-        /* --- 新增：购物车图标样式 --- */
-        .cart-icon-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            color: #333;
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-        
-        /* 蓝点角标 */
-        .cart-badge {
-            position: absolute;
-            top: -8px;
-            left: -12px; /* 位于图标左上角，与图示一致 */
-            background-color: #007bff;
-            color: white;
-            font-size: 0.7rem;
-            font-weight: bold;
-            min-width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
-        }
-
-        .cart-badge:empty { display: none; } /* 无商品时不显示 */
     </style>
-    <script src="../js/cart-logic.js">
-<script src="/js/badge-sync.js"></script>
-</script>
 </head>
 <body>
-    <header class="main-header">
-        <div class="container header-grid">
-            <h1 class="logo"><a href="/">Mao Camera <span>ltd</span></a></h1>
-            
-            <nav class="main-nav">
-                <button class="nav-toggle" aria-label="toggle navigation">
-                    <span class="hamburger"></span>
-                </button>
-                <ul class="nav-links">
-                    <li><a href="/pages/film-development.html">Development</a></li>
-                    <li><a href="/pages/equipment-store.html">Store</a></li>
-                    <li>
-                        <a href="cart.html" class="cart-icon-container">
-                            <span id="cartBadge" class="cart-badge"></span>
-                            🛒 CART
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    <div id="badge-header-placeholder"></div>
 
     <main class="detail-container" id="mainContent">
         <div id="productHeader" class="product-header">
-            <p>Loading product information...</p>
+            <p>Loading product information from Urbana server...</p>
         </div>
 
         <section class="detail-section">
@@ -97,24 +46,15 @@
     const productId = params.get('id');
     const mainContent = document.getElementById('mainContent');
 
-    // 初始化时刷新角标数量
-    document.addEventListener('DOMContentLoaded', updateCartBadge);
-
     if (!productId) {
-        mainContent.innerHTML = '<div class="error-msg">No product ID specified. Go back to <a href="equipment-store.html">Store</a>.</div>';
+        mainContent.innerHTML = '<div class="error-msg">No product ID. Go back to <a href="equipment-store.html">Store</a>.</div>';
     } else {
         fetch('../data/products.json')
-            .then(res => {
-                if (!res.ok) throw new Error('Failed to load products.json');
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
                 const product = data.find(p => p.id === productId);
-                if (product) {
-                    render(product);
-                } else {
-                    mainContent.innerHTML = `<div class="error-msg">Product "${productId}" not found.</div>`;
-                }
+                if (product) render(product);
+                else mainContent.innerHTML = `<div class="error-msg">Product not found.</div>`;
             })
             .catch(err => {
                 console.error('Error:', err);
@@ -122,26 +62,31 @@
             });
     }
 
-    // 更新购物车蓝点数量的逻辑
-    function updateCartBadge() {
-        const cart = JSON.parse(localStorage.getItem('maocamera_cart')) || [];
-        const badge = document.getElementById('cartBadge');
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-        if (totalItems > 0) {
-            badge.textContent = totalItems;
-            badge.style.display = 'flex';
-            // 添加一个微小的跳动动画效果
-            badge.style.transform = 'scale(1.2)';
-            setTimeout(() => badge.style.transform = 'scale(1)', 200);
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-
-    function render(p) {
+    /**
+     * 核心函数：异步渲染页面并检查库存
+     */
+    async function render(p) {
         document.title = `${p.name} - maocamera ltd`;
         
+        // 1. 实时访问 get-stock 接口确认是否允许购买
+        let canPurchase = true;
+        try {
+            // 加上时间戳 t 防止浏览器缓存旧的 0 库存状态
+            const stockRes = await fetch(`/api/get-stock?name=${encodeURIComponent(p.name)}&t=${Date.now()}`);
+            const stockData = await stockRes.json();
+            canPurchase = stockData.canPurchase; 
+        } catch (e) {
+            console.error("Stock check failed, defaulting to disabled for safety.");
+            canPurchase = false; 
+        }
+
+        // 2. 根据库存结果动态生成按钮样式和文字
+        const btnStyle = canPurchase 
+            ? "cursor: pointer; opacity: 1;" 
+            : "cursor: not-allowed; opacity: 0.5; background-color: #666 !important;";
+        const btnText = canPurchase ? "PAY NOW" : "SOLD OUT / MAINTENANCE";
+
+        // 3. 渲染主信息区（包含 11 件商品的对应名称和价格）
         document.getElementById('productHeader').innerHTML = `
             <div class="product-gallery">
                 <img src="${p.cover_image}" alt="${p.name}">
@@ -152,11 +97,13 @@
                 <div class="price-tag">$${p.price}</div>
                 
                 <div style="display: flex; gap: 15px; margin: 30px 0;">
-                    <button id="addToCartBtn" class="email-button" style="flex: 1; background-color: #5e9c64; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; cursor: pointer;">
+                    <button id="addToCartBtn" class="email-button" ${!canPurchase ? 'disabled' : ''} 
+                        style="flex: 1; background-color: #333; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; ${btnStyle}">
                         ADD TO CART
                     </button>
-                    <button id="buyNowBtn" class="email-button" style="flex: 1; background-color: #007bff; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; cursor: pointer;">
-                        PAY NOW
+                    <button id="buyNowBtn" class="email-button" ${!canPurchase ? 'disabled' : ''} 
+                        style="flex: 1; background-color: #007bff; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; ${btnStyle}">
+                        ${btnText}
                     </button>
                 </div>
                 <div class="spec-mini-table">
@@ -170,43 +117,42 @@
             </div>
         `;
 
+        // 4. 渲染详情图
         const imageStrip = document.getElementById('imageStrip');
-        if (p.detail_images && p.detail_images.length > 0) {
-            imageStrip.innerHTML = p.detail_images.map(img => `
-                <img src="${img}" alt="Detail Image" onerror="this.style.display='none'">
-            `).join('');
-        } else {
-            imageStrip.innerHTML = `
-                <p style="text-align:center; color:#ccc; padding:40px;">Detailed gallery coming soon...</p>
-                <img src="${p.cover_image}" style="opacity:0.3; filter: grayscale(1);">
-            `;
+        if (p.detail_images) {
+            imageStrip.innerHTML = p.detail_images.map(img => `<img src="${img}">`).join('');
         }
 
-        // 按钮事件
+        // 5. 绑定事件：添加购物车
         document.getElementById('addToCartBtn').onclick = () => {
-            addToCart(p);
-            updateCartBadge(); // 关键：点击加购后立即刷新蓝点
+            if (!canPurchase) return;
+            addToCart(p); 
+            // 注意：addToCart 内部已处理 Header 更新逻辑
         };
 
+        // 6. 绑定事件：立即跳转 Stripe 支付
         document.getElementById('buyNowBtn').onclick = async () => {
-            const buyNowBtn = document.getElementById('buyNowBtn');
-            buyNowBtn.innerText = 'Processing...';
-            buyNowBtn.disabled = true;
-
-            const instantItem = [{ id: p.id, name: p.name, price: parseFloat(p.price), quantity: 1 }];
+            if (!canPurchase) return;
+            const btn = document.getElementById('buyNowBtn');
+            btn.innerText = "LOADING...";
+            btn.disabled = true;
 
             try {
-                const response = await fetch('/api/create-checkout-session', {
+                const instantItem = [{ id: p.id, name: p.name, price: parseFloat(p.price), quantity: 1 }];
+                const res = await fetch('/api/create-checkout-session', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ items: instantItem })
                 });
-                const session = await response.json();
+                
+                if (!res.ok) throw new Error("Payment server error");
+                
+                const session = await res.json();
                 if (session.url) window.location.href = session.url;
             } catch (err) {
-                console.error('Error:', err);
-                buyNowBtn.innerText = 'PAY NOW';
-                buyNowBtn.disabled = false;
+                alert("Checkout failed. Please try again.");
+                btn.innerText = "PAY NOW";
+                btn.disabled = false;
             }
         };
     }
