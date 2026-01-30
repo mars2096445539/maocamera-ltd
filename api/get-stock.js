@@ -1,23 +1,55 @@
-import { kv } from '@vercel/kv';
+// 采用你已验证成功的 Node.js 兼容写法
+const { createClient } = require('redis');
 
-export default async function handler(req, res) {
-    const { name } = req.query;
+module.exports = async (req, res) => {
+  // 自动兼容 REDIS_URL 或 STORAGE_URL
+  const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
+  const client = createClient({ url: redisUrl });
 
-    if (!name) {
-        return res.status(400).json({ error: "Missing product name" });
+  // 获取 URL 参数中的 name
+  const { name } = req.query;
+
+  // 这是你之前同步的 11 件官方商品清单
+  const productList = [
+    "XB-2R BALLHEAD", "XB-1R BALLHEAD", "SV35 FLUIDHEAD", 
+    "MD-3 GEARHEAD", "MD-4 GEARHEAD", "PT-14 BALLHEAD COMBO", 
+    "PT-24 BALLHEAD COMBO", "MT-24 TRIPOD ONLY", "XT-15 BALLHEAD COMBO", 
+    "MT-34 TRIPOD ONLY", "MT-33S TRIPOD ONLY"
+  ];
+
+  try {
+    await client.connect();
+
+    // 逻辑 A：如果传了具体名字，查询单个库存
+    if (name) {
+      const stock = await client.get(`stock:${name}`);
+      await client.quit();
+      
+      if (stock === null) {
+        return res.status(404).json({ success: false, message: "未找到该产品" });
+      }
+      return res.status(200).json({ 
+        name, 
+        stock: parseInt(stock), 
+        inStock: parseInt(stock) > 0 
+      });
     }
 
-    try {
-        // 从 KV 数据库读取该商品的实时库存
-        const stock = await kv.get(`stock:${name}`);
-        
-        // 如果数据库里还没存这个商品，返回 0 或错误
-        if (stock === null) {
-            return res.status(404).json({ stock: 0, message: "Product not found in database" });
-        }
-
-        return res.status(200).json({ name, stock: parseInt(stock) });
-    } catch (err) {
-        return res.status(500).json({ error: err.message });
+    // 逻辑 B：如果不传名字，返回全店库存清单
+    const allStock = {};
+    for (const pName of productList) {
+      const val = await client.get(`stock:${pName}`);
+      allStock[pName] = val !== null ? parseInt(val) : 0;
     }
-}
+
+    await client.quit();
+    res.status(200).json({
+      success: true,
+      shop: "maocamera ltd",
+      inventory: allStock
+    });
+
+  } catch (e) {
+    res.status(500).json({ success: false, error: e.message });
+  }
+};
