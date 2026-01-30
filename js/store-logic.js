@@ -24,29 +24,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
     // 2. 渲染产品的函数
-    function renderProducts(items) {
-        if (items.length === 0) {
-            grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 50px;">未找到匹配的产品。</p>';
-            return;
-        }
-
-        grid.innerHTML = items.map(p => `
-            <a href="product-detail.html?id=${p.id}" class="product-card" style="text-decoration: none; color: inherit;">
-                <div class="product-img-container" style="background: #f9f9f9; aspect-ratio: 1/1; overflow: hidden;">
-                    <img src="${p.cover_image}" alt="${p.name}" class="product-img" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
-                <div class="product-info" style="padding: 15px;">
-                    <div class="brand-tag" style="font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">${p.brand}</div>
-                    <div class="product-name" style="font-weight: 600; margin: 5px 0; font-size: 1rem;">${p.name}</div>
-                    <div class="product-price" style="color: #007bff; font-weight: 700;">$${p.price}</div>
-                    
-                    <div class="in-stock-label" style="font-size: 0.8rem; margin-top: 5px; color: ${p.stock > 0 ? '#28a745' : '#dc3545'};">
-                        ${p.stock > 0 ? `In Stock: ${p.stock}` : 'Out of Stock'}
-                    </div>
-                </div>
-            </a>
-        `).join('');
+// 核心：在渲染 HTML 时，必须给库存那一栏加上指定的类名
+function renderProducts(items) {
+    const grid = document.getElementById('productGrid');
+    if (items.length === 0) {
+        grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 50px;">未找到匹配的产品。</p>';
+        return;
     }
+
+    grid.innerHTML = items.map(p => `
+        <a href="product-detail.html?id=${p.id}" class="product-card" style="text-decoration: none; color: inherit;">
+            <div class="product-img-container" style="background: #f9f9f9; aspect-ratio: 1/1; overflow: hidden;">
+                <img src="${p.cover_image}" alt="${p.name}" class="product-img" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div class="product-info" style="padding: 15px;">
+                <div class="brand-tag" style="font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">${p.brand}</div>
+                <div class="product-name" style="font-weight: 600; margin: 5px 0; font-size: 1rem;">${p.name}</div>
+                <div class="product-price" style="color: #007bff; font-weight: 700;">$${p.price}</div>
+                
+                <div class="in-stock-label" style="font-size: 0.8rem; margin-top: 5px; color: ${p.stock > 0 ? '#28a745' : '#dc3545'};">
+                    ${p.stock > 0 ? `In Stock: ${p.stock}` : 'Out of Stock'}
+                </div>
+            </div>
+        </a>
+    `).join('');
+}
 
     // 3. 搜索过滤功能
     if (searchInput) {

@@ -1,103 +1,1019 @@
-/* 1. 外部字体引入与全局变量 */
+/* 引入 Google 开源字体 Inter (包含 300 细体和 900 极粗体) */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;900&display=swap');
 
-:root {
-    --primary-blue: #007bff;
-    --retro-green: #5e9c64;
-    --brand-black: #1a1a1a;
-    --light-gray: #f4f4f4;
-}
 
-/* 2. 全局基础样式 */
-body {
-    font-family: 'Inter', -apple-system, sans-serif;
-    margin: 0;
-    line-height: 1.6;
-    background-color: var(--light-gray);
-    color: #333;
-    overflow-x: hidden;
-}
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 25px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-/* 3. Header 与 Logo 样式 */
-.main-header {
-    background: #fff;
-    border-bottom: 1px solid #eee;
-    position: sticky;
-    top: 0;
-    z-index: 2000;
-}
-
-.header-grid {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 80px;
-}
+/* --- 更新 Logo 样式，强制使用 Inter --- */
 
 .logo {
-    font-weight: 900;
+
+    font-family: 'Inter', -apple-system, sans-serif !important;
+
     font-size: 1.6rem;
-    letter-spacing: -1px;
+
+    font-weight: 900; /* 极粗 */
+
+    letter-spacing: -0.5px;
+
 }
+
+
 
 .logo a { color: #000; text-decoration: none; }
-.logo span { font-weight: 300; color: #999; margin-left: 5px; }
 
-/* 4. 产品列表 (Store Page) */
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 30px;
-    margin-top: 40px;
+
+
+.logo span {
+
+    font-weight: 300; /* 极细 */
+
+    color: #999;
+
+    margin-left: 4px;
+
 }
 
-.product-card {
-    background: #fff;
-    border: 1px solid #eee;
-    border-radius: 12px;
-    overflow: hidden;
-    transition: transform 0.3s ease;
+
+
+/* --- 确保蓝标样式存在 --- */
+
+.cart-icon-container {
+
+    position: relative;
+
+    display: inline-flex;
+
+    align-items: center;
+
 }
 
-.product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 
-.in-stock-label { font-size: 0.85rem; margin-top: 5px; font-weight: 500; }
 
-/* 5. 按钮族群 */
-.email-button, .checkout-button {
+.cart-badge {
+
+    position: absolute;
+
+    top: -8px;
+
+    left: -12px;
+
+    background-color: #007bff; /* 蓝色 */
+
+    color: white;
+
+    font-size: 0.7rem;
+
+    font-weight: bold;
+
+    min-width: 18px;
+
+    height: 18px;
+
+    border-radius: 50%;
+
+    display: none; /* 由 JS 控制显示 */
+
+    align-items: center;
+
+    justify-content: center;
+
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+
+    z-index: 10;
+
+}
+
+
+
+/* =========================================
+
+   1. 基础布局与全局变量
+
+   ========================================= */
+
+body {
+
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+    margin: 0;
+
+    line-height: 1.6;
+
+    background-color: #f4f4f4;
+
+    color: #333;
+
+    overflow-x: hidden; /* 防止手机端左右晃动 */
+
+}
+
+
+
+.container {
+
+    max-width: 1100px;
+
+    margin: 0 auto;
+
+    padding: 0 20px;
+
+}
+
+
+
+.main-header {
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #eeeeee;
+
+    position: sticky;
+
+    top: 0;
+
+    z-index: 2000; /* 极高层级，确保不被内容遮挡 */
+
+}
+
+
+
+.header-grid {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    padding: 15px 0;
+
+    gap: 20px;
+
+}
+
+
+
+/* --- 品牌 Logo 样式：精准匹配 image_725335.png --- */
+
+.logo {
+
+    margin: 0;
+
+    font-size: 1.6rem; /* 稍微放大一点增加冲击力 */
+
+    font-weight: 900;  /* Mao Camera 使用最粗的字重 */
+
+    letter-spacing: -1px; /* 紧凑的字间距更显专业 */
+
+    text-transform: none; /* 保持原图的拼写方式 */
+
+    font-family: 'Inter', -apple-system, sans-serif; /* 推荐使用 Inter 替代商业字体 */
+
+}
+
+
+
+.logo a {
+
+    text-decoration: none;
+
+    color: #000000; /* 品牌名为纯黑色 */
+
+}
+
+
+
+.logo span {
+
+    font-weight: 300; /* ltd 使用细体 */
+
+    color: #999999; /* 细灰色的后缀 */
+
+    margin-left: 5px;
+
+    font-family: -apple-system, sans-serif;
+
+}
+
+
+
+/* --- 保持你喜欢的复古绿色按钮样式 (image_72ca7b.png) --- */
+
+.email-button {
+
     display: block;
+
     width: 100%;
+
     padding: 16px;
-    border-radius: 30px; /* 统一使用大圆角，更现代 */
-    font-weight: 700;
-    font-size: 1.1rem;
-    border: none;
-    cursor: pointer;
+
+    background-color: #5e9c64; /* 复古绿 */
+
+    color: #ffffff;
+
     text-align: center;
+
+    border-radius: 12px; /* 圆角增加厚实感 */
+
+    font-weight: 700;
+
+    font-size: 1.1rem;
+
+    border: none;
+
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+    cursor: pointer;
+
     transition: all 0.2s ease;
+
 }
 
-.email-button { background-color: var(--retro-green); color: #fff; }
-#buyNowBtn, .cart-badge { background-color: var(--primary-blue); color: #fff; }
-.checkout-button { background-color: #000; color: #fff; margin-top: 20px; }
 
-/* 6. 购物车专项 */
-.cart-flex-wrapper { display: flex; gap: 40px; margin-top: 20px; }
-.cart-item-card { display: flex; align-items: center; gap: 20px; padding: 25px 0; border-bottom: 1px solid #eee; }
-.cart-item-img { width: 100px; height: 100px; object-fit: contain; border-radius: 8px; }
-.summary-box { background: #f9f9f9; padding: 25px; border-radius: 12px; border: 1px solid #eee; }
 
-/* 7. 移动端适配 (< 850px) */
+#buyNowBtn {
+
+    background-color: #007bff; /* PAY NOW 保持蓝色，与角标一致 */
+
+}
+
+/* =========================================
+
+   2. 桌面端展示 (> 850px)
+
+   ========================================= */
+
+@media (min-width: 851px) {
+
+    .nav-toggle { display: none; } /* 隐藏三条杠 */
+
+/* --- 导航链接间距优化 --- */
+
+.nav-links {
+
+    display: flex;
+
+    gap: 2rem; /* 使用 rem 单位，随字号缩放 */
+
+    list-style: none;
+
+    align-items: center;
+
+}
+
+
+
+    .nav-links {
+
+        display: flex;
+
+        list-style: none;
+
+        gap: 25px;
+
+        margin: 0;
+
+        padding: 0;
+
+    }
+
+
+
+    .nav-links li a {
+
+        text-decoration: none;
+
+        color: #444;
+
+        font-size: 0.85rem;
+
+        font-weight: 600;
+
+        text-transform: uppercase;
+
+        letter-spacing: 0.5px;
+
+    }
+
+}
+
+
+
+/* =========================================
+
+   3. 移动端展示 (< 850px)
+
+   ========================================= */
+
 @media (max-width: 850px) {
+
+    /* 强制显示三条杠按钮 */
+
+    .nav-toggle {
+
+        display: block !important;
+
+        background: transparent;
+
+        border: none;
+
+        cursor: pointer;
+
+        padding: 10px;
+
+        z-index: 3000;
+
+        position: relative;
+
+    }
+
+
+
+    .hamburger, .hamburger::before, .hamburger::after {
+
+        display: block;
+
+        background: #333;
+
+        width: 25px;
+
+        height: 3px;
+
+        border-radius: 3px;
+
+        transition: all 0.3s ease;
+
+    }
+
+    .hamburger { position: relative; }
+
+    .hamburger::before, .hamburger::after { content: ''; position: absolute; left: 0; }
+
+    .hamburger::before { top: -8px; }
+
+    .hamburger::after { bottom: 8px; }
+
+
+
+    /* 全屏菜单逻辑 */
+
+    .nav-links {
+
+        display: none; /* 默认关闭 */
+
+        flex-direction: column;
+
+        position: fixed;
+
+        top: 0;
+
+        right: 0;
+
+        height: 100vh;
+
+        width: 80%; /* 弹出占屏幕80% */
+
+        background: white;
+
+        box-shadow: -10px 0 30px rgba(0,0,0,0.15);
+
+        padding: 100px 40px;
+
+        list-style: none;
+
+        z-index: 2500;
+
+    }
+
+
+
+    .nav-open .nav-links { display: flex; } /* 展开状态 */
+
+    .nav-links li { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+
+    .nav-links a { font-size: 1.2rem; text-decoration: none; color: #333; font-weight: 700; }
+
+
+
+/* 展开菜单后，三条杠不旋转，直接变灰色 */
+.nav-open .hamburger,
+.nav-open .hamburger::before,
+.nav-open .hamburger::after {
+    background: #999 !important; /* 变成灰色 */
+    transform: none !important;  /* 强制取消旋转动画 */
+}
+
+
+    /* 商店页搜索框专属防跳动 */
+
+    .search-bar { flex: 0 1 120px; transition: all 0.4s ease; }
+
+    .search-bar:focus-within { flex: 1; }
+
+    .search-bar:focus-within ~ .store-label { display: none; }
+
+}
+
+
+
+/* =========================================
+
+   4. 详情页复古绿色按钮
+
+   ========================================= */
+
+.email-button {
+
+    display: block;
+
+    width: 100%;
+
+    padding: 15px;
+
+    background-color: #5e9c64; /* 复古绿 */
+
+    color: white;
+
+    text-align: center;
+
+    border-radius: 12px;
+
+    font-weight: 700;
+
+    font-size: 1.1rem;
+
+    border: none;
+
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+    cursor: pointer;
+
+    margin-top: 15px;
+
+}
+
+
+
+/* --- 购物车页面专项样式 --- */
+
+
+
+/* 1. MY CART 字符样式 */
+
+.cart-page-title {
+
+    font-size: 2.4rem;       /* 足够大的字号 */
+
+    font-weight: 900;        /* 极粗的字重，符合 B&H 风格 */
+
+    text-transform: uppercase; /* 强制大写 */
+
+    margin: 40px 0 20px;     /* 上下间距 */
+
+    letter-spacing: 1px;     /* 增加字母间距 */
+
+    color: #1a1a1a;          /* 纯黑偏灰，显得稳重 */
+
+    border-bottom: 2px solid #333; /* 标题下方的横线，增加引导感 */
+
+    padding-bottom: 10px;
+
+}
+
+
+
+/* 购物车布局容器 (两栏式) */
+
+.cart-content-wrapper {
+
+    display: flex;
+
+    gap: 40px;
+
+    align-items: flex-start;
+
+}
+
+
+
+.cart-items-section {
+
+    flex: 2; /* 商品列表占据更多宽度 */
+
+}
+
+
+
+.cart-summary-sidebar {
+
+    flex: 1; /* 侧边栏占 1/3 */
+
+    position: sticky;
+
+    top: 100px;
+
+}
+
+
+
+/* 结算按钮优化：保持之前的拟物化设计但使用黑色 */
+
+.checkout-button {
+
+    display: block;
+
+    width: 100%;
+
+    padding: 18px;
+
+    background-color: #000; /* 仿 Stripe 或 B&H 的黑色按钮 */
+
+    color: white;
+
+    text-align: center;
+
+    border-radius: 12px;
+
+    font-weight: 800;
+
+    border: none;
+
+    cursor: pointer;
+
+    transition: transform 0.2s;
+
+}
+
+
+
+.checkout-button:hover {
+
+    transform: scale(1.02);
+
+}
+
+
+
+/* 移动端适配：将两栏改为一栏 */
+
+@media (max-width: 800px) {
+
+    .cart-content-wrapper {
+
+        flex-direction: column;
+
+    }
+
+    .cart-page-title {
+
+        font-size: 1.8rem;
+
+    }
+
+}
+
+/* 右上角蓝色角标样式 */
+
+.cart-badge {
+
+    position: absolute;
+
+    top: -8px;
+
+    left: -12px;
+
+    background-color: #007bff; /* 蓝色背景 */
+
+    color: white;              /* 白色数字 */
+
+    font-size: 0.7rem;
+
+    font-weight: bold;
+
+    min-width: 18px;
+
+    height: 18px;
+
+    border-radius: 50%;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+
+}
+
+/* --- 搜索框样式优化 --- */
+
+.search-bar input {
+
+    width: 100%;
+
+    padding: 10px 20px;
+
+    border: 1.5px solid #eee; /* 稍微加粗边框增加质感 */
+
+    border-radius: 30px;      /* 核心修改：更大的圆角 */
+
+    font-size: 0.9rem;
+
+    outline: none;
+
+    background: #fdfdfd;
+
+    transition: all 0.3s ease;
+
+}
+
+
+
+.search-bar input:focus {
+
+    border-color: #007bff;    /* 聚焦时显示为您喜欢的复古绿色 */
+
+    background: #fff;
+
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+}
+
+
+
+/* --- 商店页特有的居中布局处理 --- */
+
+.store-search-centering {
+
+    flex: 1;
+
+    max-width: 500px; /* 桌面端限制搜索框最大宽度 */
+
+    margin: 0 40px;   /* 与左右元素拉开间距 */
+
+}
+
+
+
+/* --- 移动端防跳动保持 --- */
+
+@media (max-width: 850px) {
+    .store-search-centering {
+        /* 核心修复：将 margin-right 增加到 30px，强行拉开与横线的距离 */
+        margin: 0 30px 0 10px; 
+        
+        /* 动态限制最大宽度，给左侧 Logo 和右侧横线预留固定空间 */
+        max-width: calc(100% - 160px); 
+    }
+    
+    .store-search-centering:focus-within {
+        /* 聚焦时也不要完全占满，保留右侧 30px 间距防止挡住“退出”点击 */
+        max-width: calc(100% - 100px); 
+    }
+}
+
+/* 右上角蓝色角标样式 */
+
+.cart-icon-container {
+
+    position: relative;
+
+    display: inline-flex;
+
+    align-items: center;
+
+}
+
+
+
+.cart-badge {
+
+    position: absolute;
+
+    top: -8px;
+
+    left: -12px;
+
+    background-color: #007bff; /* 蓝色边框风格一致 */
+
+    color: white;
+
+    font-size: 0.7rem;
+
+    font-weight: bold;
+
+    min-width: 18px;
+
+    height: 18px;
+
+    border-radius: 50%;
+
+    display: none; /* 默认隐藏，由 JS 控制显示 */
+
+    align-items: center;
+
+    justify-content: center;
+
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+
+    z-index: 10;
+
+    transition: transform 0.2s ease;
+
+}
+
+/* --- 购物车双栏布局 --- */
+
+.cart-flex-wrapper {
+
+    display: flex;
+
+    gap: 40px;
+
+    align-items: flex-start;
+
+    margin-top: 20px;
+
+}
+
+
+
+.cart-items-list { flex: 2; }
+
+.cart-summary-sidebar { flex: 1; position: sticky; top: 100px; }
+
+
+
+/* 商品卡片样式 (参照 B&H) */
+
+.cart-item-card {
+
+    display: flex;
+
+    gap: 20px;
+
+    padding: 20px 0;
+
+    border-bottom: 1px solid #eee;
+
+}
+
+
+
+.cart-item-info { flex: 1; }
+
+.cart-item-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 5px; }
+
+.cart-item-stock { color: #888; font-size: 0.9rem; } /* 灰色 In Stock */
+
+
+
+/* 汇总栏样式 */
+
+.summary-box {
+
+    background: #f9f9f9;
+
+    padding: 25px;
+
+    border-radius: 12px;
+
+    border: 1px solid #eee;
+
+}
+
+
+
+.summary-row {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    margin: 12px 0;
+
+    color: #444;
+
+}
+
+
+
+.total-row {
+
+    font-size: 1.4rem;
+
+    font-weight: 900;
+
+    color: #000;
+
+    margin-top: 20px;
+
+}
+
+
+
+.shipping-free { color: #5e9c64; font-weight: 700; }
+
+
+
+.checkout-button {
+
+    width: 100%;
+
+    background: #000;
+
+    color: #fff;
+
+    padding: 18px;
+
+    border-radius: 30px; /* 大圆角保持一致 */
+
+    font-weight: 900;
+
+    border: none;
+
+    cursor: pointer;
+
+    margin-top: 20px;
+
+    transition: transform 0.1s;
+
+}
+
+
+
+.checkout-button:active { transform: scale(0.98); }
+
+
+
+/* 移动端适配 */
+
+@media (max-width: 900px) {
+
     .cart-flex-wrapper { flex-direction: column; }
-    .nav-toggle { display: block; }
-    .nav-links { display: none; } /* 移动端逻辑由 JS 控制 */
+
+    .cart-summary-sidebar { width: 100%; position: static; }
+
+}
+
+/* 商品列表卡片 */
+
+.cart-item-card {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 20px;
+
+    padding: 25px 0;
+
+    border-bottom: 1px solid #eee;
+
+}
+
+
+
+.cart-item-img {
+
+    width: 100px;
+
+    height: 100px;
+
+    object-fit: contain;
+
+    background: #f9f9f9;
+
+    border-radius: 8px;
+
+}
+
+
+
+.cart-item-info { flex: 1; }
+
+.cart-item-name { font-weight: 800; font-size: 1.1rem; margin-bottom: 5px; }
+
+.cart-item-stock { color: #888; font-size: 0.85rem; margin-bottom: 12px; }
+
+
+
+/* 数量控制按钮 */
+
+.quantity-controls { display: flex; align-items: center; gap: 15px; }
+
+.qty-btn {
+
+    width: 28px;
+
+    height: 28px;
+
+    border: 1px solid #ddd;
+
+    background: #fff;
+
+    cursor: pointer;
+
+    border-radius: 4px;
+
+    font-weight: bold;
+
+}
+
+.remove-link {
+
+    background: none;
+
+    border: none;
+
+    color: #cc0000;
+
+    font-size: 0.85rem;
+
+    cursor: pointer;
+
+    margin-left: 10px;
+
+    text-decoration: underline;
+
+}
+
+
+
+.cart-item-price { font-weight: 900; font-size: 1.2rem; }
+
+
+
+/* --- 全局容器优化 --- */
+
+.container {
+
+    max-width: 1200px; /* 限制最大宽度，防止大屏过散 */
+
+    margin: 0 auto;    /* 居中对齐 */
+
+    padding: 0 25px;   /* 核心修复：为两侧增加 25px 的安全留白 */
+
+    width: 100%;       /* 确保占满宽度 */
+
+    box-sizing: border-box; /* 确保 padding 不撑大容器 */
+
+}
+
+
+
+/* --- Header 布局微调 --- */
+
+.main-header {
+
+    width: 100%;
+
+    border-bottom: 1px solid #eee; /* 增加细线增加层次感 */
+
+    background: #fff;
+
+}
+
+
+
+.header-grid {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    height: 80px; /* 统一高度，更稳重 */
+
+}
+
+
+
+
+
+/* 窄屏适配 (平板/窄笔记本) */
+
+@media (max-width: 900px) {
+
+    .container {
+
+        padding: 0 15px; /* 极窄屏幕缩小留白，留出内容空间 */
+
+    }
+
+    .nav-links {
+
+        gap: 1.2rem; /* 缩小链接间的距离，防止换行 */
+
+    }
+
+    .logo {
+
+        font-size: 1.4rem; /* 稍微缩小 Logo，避免挤压 */
+
+    }
+
 }
