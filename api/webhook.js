@@ -1,57 +1,46 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const fs = require('fs');
-const path = require('path');
+const { createClient } = require('redis');
 
-// 重要：必须禁用 Vercel 的默认解析器，Stripe 需要原始请求体来校验签名
-export const config = {
-    api: { bodyParser: false },
-};
+module.exports = async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
+  const client = createClient({ url: redisUrl });
 
-async function buffer(readable) {
-    const chunks = [];
-    for await (const chunk of readable) {
-        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-    }
-    return Buffer.concat(chunks);
-}
+  let event;
 
-export default async function handler(req, res) {
-    if (req.method !== 'POST') return res.status(405).end();
+  try {
+    // 1. 验证信号确实来自 Stripe，防止恶意刷库存
+    event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
 
-    const buf = await buffer(req);
-    const sig = req.headers['stripe-signature'];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-    let event;
+  // 2. 只处理支付成功的事件
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object;
 
     try {
-        // 使用密钥验证这一条消息确实来自 Stripe
-        event = stripe.webhooks.constructEvent(buf, sig, webhookSecret);
-    } catch (err) {
-        console.error(`❌ Webhook 签名验证失败: ${err.message}`);
-        return res.status(400).send(`Webhook Error: ${err.message}`);
+      await client.connect();
+
+      // 3. 从订单详情中获取产品和数量
+      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+
+      for (const item of lineItems.data) {
+        // 假设你在 Stripe 产品的 Description 或 Name 里用了官方名称
+        const productName = item.description; 
+        const quantityPurchased = item.quantity;
+
+        // 4. 云端自动减扣：DECRBY 命令
+        await client.decrBy(`stock:${productName}`, quantityPurchased);
+      }
+
+      await client.quit();
+    } catch (dbErr) {
+      console.error("Redis Error:", dbErr);
     }
+  }
 
-    // 核心逻辑：监听支付成功事件
-    if (event.type === 'checkout.session.completed') {
-        const session = event.data.object;
-        const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
-        
-        const filePath = path.join(process.cwd(), 'data', 'products.json');
-        let products = JSON.parse(fs.readFileSync(filePath, 'utf8'));
-
-        // 联动扣减库存
-        lineItems.data.forEach(item => {
-            const productInDb = products.find(p => p.name === item.description);
-            if (productInDb) {
-                productInDb.stock = Math.max(0, productInDb.stock - item.quantity);
-                console.log(`✅ 库存联动：${productInDb.name} 剩余 ${productInDb.stock} 件`);
-            }
-        });
-
-        // 保存更新后的 JSON 文件
-        fs.writeFileSync(filePath, JSON.stringify(products, null, 2));
-    }
-
-    res.status(200).json({ received: true });
-}
+  // 5. 必须返回 200，告诉 Stripe 我们收到了
+  res.status(200).json({ received: true });
+};
