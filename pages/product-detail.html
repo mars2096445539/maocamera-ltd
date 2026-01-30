@@ -32,7 +32,7 @@
 
     <main class="detail-container" id="mainContent">
         <div id="productHeader" class="product-header">
-            <p>Loading product information...</p>
+            <p>Loading product information from Urbana server...</p>
         </div>
 
         <section class="detail-section">
@@ -49,7 +49,6 @@
     if (!productId) {
         mainContent.innerHTML = '<div class="error-msg">No product ID. Go back to <a href="equipment-store.html">Store</a>.</div>';
     } else {
-        // 确保路径正确：/pages/ 下去取 ../data/
         fetch('../data/products.json')
             .then(res => res.json())
             .then(data => {
@@ -59,69 +58,102 @@
             })
             .catch(err => {
                 console.error('Error:', err);
-                mainContent.innerHTML = '<div class="error-msg">Error loading data. Check console.</div>';
+                mainContent.innerHTML = '<div class="error-msg">Error loading data.</div>';
             });
     }
 
-async function render(p) {
-    document.title = `${p.name} - maocamera ltd`;
-    
-    // 1. 在显示按钮前，实时检查库存状态
-    let canPurchase = true;
-    try {
-        const stockRes = await fetch(`/api/get-stock?name=${encodeURIComponent(p.name)}&t=${Date.now()}`);
-        const stockData = await stockRes.json();
-        canPurchase = stockData.canPurchase; // 获取我们在 get-stock.js 里写的布尔值
-    } catch (e) {
-        console.error("库存检查失败", e);
-    }
+    /**
+     * 核心函数：异步渲染页面并检查库存
+     */
+    async function render(p) {
+        document.title = `${p.name} - maocamera ltd`;
+        
+        // 1. 实时访问 get-stock 接口确认是否允许购买
+        let canPurchase = true;
+        try {
+            // 加上时间戳 t 防止浏览器缓存旧的 0 库存状态
+            const stockRes = await fetch(`/api/get-stock?name=${encodeURIComponent(p.name)}&t=${Date.now()}`);
+            const stockData = await stockRes.json();
+            canPurchase = stockData.canPurchase; 
+        } catch (e) {
+            console.error("Stock check failed, defaulting to disabled for safety.");
+            canPurchase = false; 
+        }
 
-    // 2. 根据 canPurchase 状态动态设置按钮样式
-    const btnStyle = canPurchase 
-        ? "cursor: pointer; opacity: 1;" 
-        : "cursor: not-allowed; opacity: 0.5; background-color: #666 !important;";
-    const btnText = canPurchase ? "PAY NOW" : "SOLD OUT / MAINTENANCE";
+        // 2. 根据库存结果动态生成按钮样式和文字
+        const btnStyle = canPurchase 
+            ? "cursor: pointer; opacity: 1;" 
+            : "cursor: not-allowed; opacity: 0.5; background-color: #666 !important;";
+        const btnText = canPurchase ? "PAY NOW" : "SOLD OUT / MAINTENANCE";
 
-    document.getElementById('productHeader').innerHTML = `
-        <div class="product-gallery">
-            <img src="${p.cover_image}" alt="${p.name}">
-        </div>
-        <div class="product-main-info">
-            <div class="brand-tag">${p.brand}</div>
-            <h2 class="product-title">${p.name}</h2>
-            <div class="price-tag">$${p.price}</div>
-            
-            <div style="display: flex; gap: 15px; margin: 30px 0;">
-                <button id="addToCartBtn" class="email-button" ${!canPurchase ? 'disabled' : ''} 
-                    style="flex: 1; background-color: #333; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; ${btnStyle}">
-                    ADD TO CART
-                </button>
-                <button id="buyNowBtn" class="email-button" ${!canPurchase ? 'disabled' : ''} 
-                    style="flex: 1; background-color: #007bff; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; ${btnStyle}">
-                    ${btnText}
-                </button>
+        // 3. 渲染主信息区（包含 11 件商品的对应名称和价格）
+        document.getElementById('productHeader').innerHTML = `
+            <div class="product-gallery">
+                <img src="${p.cover_image}" alt="${p.name}">
             </div>
+            <div class="product-main-info">
+                <div class="brand-tag">${p.brand}</div>
+                <h2 class="product-title">${p.name}</h2>
+                <div class="price-tag">$${p.price}</div>
+                
+                <div style="display: flex; gap: 15px; margin: 30px 0;">
+                    <button id="addToCartBtn" class="email-button" ${!canPurchase ? 'disabled' : ''} 
+                        style="flex: 1; background-color: #333; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; ${btnStyle}">
+                        ADD TO CART
+                    </button>
+                    <button id="buyNowBtn" class="email-button" ${!canPurchase ? 'disabled' : ''} 
+                        style="flex: 1; background-color: #007bff; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; ${btnStyle}">
+                        ${btnText}
+                    </button>
+                </div>
+                <div class="spec-mini-table">
+                    ${Object.entries(p.specs).map(([key, value]) => `
+                        <div class="spec-item">
+                            <span class="spec-label">${key.replace('_', ' ').toUpperCase()}</span>
+                            <span>${value}</span>
+                        </div>
+                    `).join('')}
+                </div>
             </div>
-    `;
+        `;
 
-    // ... 后续的 onclick 绑定逻辑保持不变 ...
-}
+        // 4. 渲染详情图
+        const imageStrip = document.getElementById('imageStrip');
+        if (p.detail_images) {
+            imageStrip.innerHTML = p.detail_images.map(img => `<img src="${img}">`).join('');
+        }
 
-        // --- 核心：这里调用 silent 版的 addToCart ---
+        // 5. 绑定事件：添加购物车
         document.getElementById('addToCartBtn').onclick = () => {
+            if (!canPurchase) return;
             addToCart(p); 
-            // 注意：这里不要再写 alert，addToCart 内部会自动通知 Header 更新
+            // 注意：addToCart 内部已处理 Header 更新逻辑
         };
 
+        // 6. 绑定事件：立即跳转 Stripe 支付
         document.getElementById('buyNowBtn').onclick = async () => {
-            const instantItem = [{ id: p.id, name: p.name, price: parseFloat(p.price), quantity: 1 }];
-            const res = await fetch('/api/create-checkout-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: instantItem })
-            });
-            const session = await res.json();
-            if (session.url) window.location.href = session.url;
+            if (!canPurchase) return;
+            const btn = document.getElementById('buyNowBtn');
+            btn.innerText = "LOADING...";
+            btn.disabled = true;
+
+            try {
+                const instantItem = [{ id: p.id, name: p.name, price: parseFloat(p.price), quantity: 1 }];
+                const res = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: instantItem })
+                });
+                
+                if (!res.ok) throw new Error("Payment server error");
+                
+                const session = await res.json();
+                if (session.url) window.location.href = session.url;
+            } catch (err) {
+                alert("Checkout failed. Please try again.");
+                btn.innerText = "PAY NOW";
+                btn.disabled = false;
+            }
         };
     }
 </script>
