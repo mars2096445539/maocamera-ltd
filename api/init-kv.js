@@ -1,28 +1,35 @@
-import { kv } from '@vercel/kv';
+import { createClient } from 'redis';
+import { NextResponse } from 'next/server';
 
-export default async function handler(req, res) {
-    // 你刚才提供的完整 11 件商品数据
-    const products = [
-        { name: "XB-2R BALLHEAD", stock: 2 },
-        { name: "XB-1R BALLHEAD", stock: 2 },
-        { name: "SV35 FLUIDHEAD", stock: 3 },
-        { name: "MD-3 GEARHEAD", stock: 4 },
-        { name: "MD-4 GEARHEAD", stock: 2 },
-        { name: "PT-14 BALLHEAD COMBO", stock: 2 },
-        { name: "PT-24 BALLHEAD COMBO", stock: 4 },
-        { name: "MT-24 TRIPOD ONLY", stock: 3 },
-        { name: "XT-15 BALLHEAD COMBO", stock: 2 },
-        { name: "MT-34 TRIPOD ONLY", stock: 1 },
-        { name: "MT-33S TRIPOD ONLY", stock: 1 }
-    ];
+export const GET = async () => {
+  // 1. 创建客户端：它会自动读取你 Vercel 后台的 REDIS_URL
+  const client = createClient({
+    url: process.env.REDIS_URL
+  });
 
-    try {
-        for (const p of products) {
-            // 将库存存入 KV 数据库，键名格式为 stock:商品名
-            await kv.set(`stock:${p.name}`, p.stock);
-        }
-        return res.status(200).json({ message: "Successfully synced 11 products to KV!" });
-    } catch (err) {
-        return res.status(500).json({ error: err.message });
+  try {
+    // 2. 建立连接
+    await client.connect();
+
+    // 3. 定义你的 11 件商品数据
+    const products = {
+      "PT-14 BALLHEAD COMBO": 2,
+      "MAOCAMERA FILM CASE": 5,
+      "M-HOLDER FOR LF": 3,
+      // ... 剩下的 8 件商品请按此格式补充
+    };
+
+    // 4. 将数据写入数据库
+    for (const [name, stock] of Object.entries(products)) {
+      await client.set(`stock:${name}`, stock.toString());
     }
-}
+
+    // 5. 断开连接并返回成功消息
+    await client.quit();
+    return NextResponse.json({ message: "Successfully synced 11 products to Redis!" });
+
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Failed to connect to Redis" }, { status: 500 });
+  }
+};
