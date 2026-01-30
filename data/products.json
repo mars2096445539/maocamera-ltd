@@ -5,7 +5,7 @@
     "name": "XB-2R BALLHEAD",
     "cn_name": "xb2r球形云台",
     "price": "159.00",
-    "stock": 2,
+    "stock": 0,
     "category": "Ballhead",
     "cover_image": "/img/products/xb2r-main.jpg",
     "specs": { "type": "Ballhead", "quick_release": "Arca-Swiss" },
