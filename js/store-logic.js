@@ -1,10 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
     const grid = document.getElementById('productGrid');
     const searchInput = document.getElementById('searchInput');
-    let allProducts = []; // 用于存储原始数据，方便搜索过滤
+    let allProducts = []; 
 
     // 1. 从 JSON 文件抓取数据
-    // 注意：路径相对于 HTML 文件，所以在 pages 目录下需要用 ../
     fetch('../data/products.json')
         .then(response => {
             if (!response.ok) throw new Error('网络响应异常');
@@ -12,7 +11,12 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(data => {
             allProducts = data;
-            renderProducts(allProducts); // 初次加载显示全部
+            renderProducts(allProducts); 
+            
+            // 核心修复：渲染完后，立刻通知同步脚本去云端抓取真实库存
+            if (window.syncLiveInventory) {
+                window.syncLiveInventory();
+            }
         })
         .catch(error => {
             console.error('加载产品数据失败:', error);
@@ -35,7 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="brand-tag" style="font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 1px;">${p.brand}</div>
                     <div class="product-name" style="font-weight: 600; margin: 5px 0; font-size: 1rem;">${p.name}</div>
                     <div class="product-price" style="color: #007bff; font-weight: 700;">$${p.price}</div>
-                    <div style="font-size: 0.8rem; margin-top: 5px; color: ${p.stock > 0 ? '#28a745' : '#dc3545'};">
+                    
+                    <div class="in-stock-label" style="font-size: 0.8rem; margin-top: 5px; color: ${p.stock > 0 ? '#28a745' : '#dc3545'};">
                         ${p.stock > 0 ? `In Stock: ${p.stock}` : 'Out of Stock'}
                     </div>
                 </div>
@@ -53,6 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 (p.cn_name && p.cn_name.toLowerCase().includes(searchTerm))
             );
             renderProducts(filtered);
+            // 搜索后也要重新同步一次云端库存
+            if (window.syncLiveInventory) window.syncLiveInventory();
         });
     }
 });
