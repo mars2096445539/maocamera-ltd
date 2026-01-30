@@ -1,12 +1,11 @@
-import { createClient } from 'redis';
-import { NextResponse } from 'next/server';
+const { createClient } = require('redis');
 
-export const GET = async () => {
-  // 自动兼容两种可能的变量名
+module.exports = async (req, res) => {
+  // 自动兼容你之前的 STORAGE 前缀或标准的 REDIS 变量
   const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
 
   if (!redisUrl) {
-    return NextResponse.json({ error: "钥匙丢了：找不到 REDIS_URL 或 STORAGE_URL" }, { status: 500 });
+    return res.status(500).json({ error: "找不到数据库连接地址 (REDIS_URL missing)" });
   }
 
   const client = createClient({ url: redisUrl });
@@ -14,12 +13,12 @@ export const GET = async () => {
   try {
     await client.connect();
 
-    // 录入你那 11 件商品的库存
+    // 录入 maocamera ltd 的 11 件商品库存
     const products = {
       "PT-14 BALLHEAD COMBO": 2,
       "MAOCAMERA FILM CASE": 5,
       "M-HOLDER FOR LF": 3
-      // ... 请在此补充剩余商品
+      // ... 剩下的 8 件请在此补充
     };
 
     for (const [name, stock] of Object.entries(products)) {
@@ -27,9 +26,9 @@ export const GET = async () => {
     }
 
     await client.quit();
-    return NextResponse.json({ message: "maocamera ltd 库存初始化成功！" });
+    res.status(200).json({ message: "maocamera ltd 库存初始化成功！" });
 
   } catch (error) {
-    return NextResponse.json({ error: "连接失败", details: error.message }, { status: 500 });
+    res.status(500).json({ error: "连接失败", details: error.message });
   }
 };
