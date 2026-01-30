@@ -1,15 +1,13 @@
-// 采用你已验证成功的 Node.js 兼容写法
+// 坚持使用你已经跑通的 Node.js 兼容写法
 const { createClient } = require('redis');
 
 module.exports = async (req, res) => {
-  // 自动兼容 REDIS_URL 或 STORAGE_URL
   const redisUrl = process.env.REDIS_URL || process.env.STORAGE_URL;
   const client = createClient({ url: redisUrl });
 
-  // 获取 URL 参数中的 name
   const { name } = req.query;
 
-  // 这是你之前同步的 11 件官方商品清单
+  // maocamera ltd 官方 11 件商品清单
   const productList = [
     "XB-2R BALLHEAD", "XB-1R BALLHEAD", "SV35 FLUIDHEAD", 
     "MD-3 GEARHEAD", "MD-4 GEARHEAD", "PT-14 BALLHEAD COMBO", 
@@ -20,36 +18,40 @@ module.exports = async (req, res) => {
   try {
     await client.connect();
 
-    // 逻辑 A：如果传了具体名字，查询单个库存
+    // 1. 查询单个商品库存
     if (name) {
-      const stock = await client.get(`stock:${name}`);
+      const stockVal = await client.get(`stock:${name}`);
       await client.quit();
-      
-      if (stock === null) {
-        return res.status(404).json({ success: false, message: "未找到该产品" });
+
+      if (stockVal === null) {
+        return res.status(404).json({ canPurchase: false, error: "未找到该产品" });
       }
-      return res.status(200).json({ 
-        name, 
-        stock: parseInt(stock), 
-        inStock: parseInt(stock) > 0 
+
+      const count = parseInt(stockVal);
+      return res.status(200).json({
+        name,
+        stock: count,
+        // 核心逻辑：库存大于 0 且非手动锁定才允许购买
+        canPurchase: count > 0 
       });
     }
 
-    // 逻辑 B：如果不传名字，返回全店库存清单
-    const allStock = {};
+    // 2. 查询全店清单（供你管理使用）
+    const inventory = {};
     for (const pName of productList) {
       const val = await client.get(`stock:${pName}`);
-      allStock[pName] = val !== null ? parseInt(val) : 0;
+      inventory[pName] = val !== null ? parseInt(val) : 0;
     }
 
     await client.quit();
     res.status(200).json({
-      success: true,
       shop: "maocamera ltd",
-      inventory: allStock
+      inventory,
+      // 如果你想一键关店，可以在这里把所有商品的购买权限统一置为 false
+      globalStatus: "Operational" 
     });
 
   } catch (e) {
-    res.status(500).json({ success: false, error: e.message });
+    res.status(500).json({ canPurchase: false, error: e.message });
   }
 };
