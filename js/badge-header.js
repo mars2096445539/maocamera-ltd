@@ -9,12 +9,14 @@ function injectGlobalHeader() {
         <header class="main-header">
             <div class="container header-grid">
                 <h1 class="logo"><a href="/">Mao Camera <span>ltd</span></a></h1>
+                <div class="search-bar store-search-centering">
+                    <input type="text" id="searchInput" placeholder="search" aria-label="search">
+                </div>
                 <nav class="main-nav">
                     <button class="nav-toggle" aria-label="toggle navigation"><span class="hamburger"></span></button>
                     <ul class="nav-links">
                         <li><a href="/pages/film-development.html">Development</a></li>
-                        <li><a href="/pages/equipment-store.html">Store</a></li>
-                        <li><a href="/pages/equipment-rental.html">Rental</a></li>
+                        <li><a href="/pages/store.html">Store</a></li>
                         <li>
                             <a href="/pages/cart.html" class="cart-icon-container">
                                 <span id="cartBadge" class="cart-badge"></span>

@@ -11,7 +11,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "redis": "^5.10.0",
-    "stripe": "^20.3.0"
+    "authorizenet": "^1.0.10",
+    "redis": "^5.10.0"
   }
 }

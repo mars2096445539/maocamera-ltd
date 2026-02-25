@@ -50,62 +50,38 @@
 
 
 
-.cart-badge {
-
-    position: absolute;
-
-    top: -8px;
-
-    left: -12px;
-
-    background-color: #007bff; /* 蓝色 */
-
-    color: white;
-
-    font-size: 0.7rem;
-
-    font-weight: bold;
-
-    min-width: 18px;
-
-    height: 18px;
-
-    border-radius: 50%;
-
-    display: none; /* 由 JS 控制显示 */
-
-    align-items: center;
-
-    justify-content: center;
-
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-
-    z-index: 10;
-
-}
+.cart-badge { /* Consolidated definition appears later; this earlier duplicate removed. */ }
 
 
 
 /* =========================================
-
    1. 基础布局与全局变量
-
    ========================================= */
+html {
+    overflow-y: scroll; /* Keep layout width consistent across pages */
+}
 
 body {
-
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-
     margin: 0;
-
     line-height: 1.6;
-
     background-color: #f4f4f4;
-
     color: #333;
-
     overflow-x: hidden; /* 防止手机端左右晃动 */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
 
+main {
+    flex: 1 0 auto;
+    width: 100%;
+}
+
+.main-footer {
+    margin-top: auto;
+    width: 100%;
 }
 
 
@@ -121,55 +97,44 @@ body {
 }
 
 
+    /* Logo styles consolidated above; duplicate removed. */
+    /* #buyNowBtn remains defined later if page-specific override is needed. */
 
 .main-header {
-
     background: #ffffff;
-
     border-bottom: 1px solid #eeeeee;
-
     position: sticky;
-
     top: 0;
-
-    z-index: 2000; /* 极高层级，确保不被内容遮挡 */
-
+    z-index: 2000;
+    padding: 24px 0;
+    display: flex;
+    align-items: center;
 }
-
-
 
 .header-grid {
-
-    display: flex;
-
-    justify-content: space-between;
-
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
     align-items: center;
-
-    padding: 15px 0;
-
     gap: 20px;
-
+    width: 100%;
+    padding: 0 0;
 }
+
+.main-nav { justify-self: end; }
+.search-bar { justify-self: center; }
 
 
 
 /* --- 品牌 Logo 样式：精准匹配 image_725335.png --- */
 
 .logo {
-
     margin: 0;
-
-    font-size: 1.6rem; /* 稍微放大一点增加冲击力 */
-
-    font-weight: 900;  /* Mao Camera 使用最粗的字重 */
-
-    letter-spacing: -1px; /* 紧凑的字间距更显专业 */
-
-    text-transform: none; /* 保持原图的拼写方式 */
-
-    font-family: 'Inter', -apple-system, sans-serif; /* 推荐使用 Inter 替代商业字体 */
-
+    padding: 0;
+    font-size: 1.6rem;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+    font-family: 'Inter', -apple-system, sans-serif;
+    flex-shrink: 0;
 }
 
 
@@ -185,49 +150,9 @@ body {
 
 
 .logo span {
-
     font-weight: 300; /* ltd 使用细体 */
-
-    color: #999999; /* 细灰色的后缀 */
-
-    margin-left: 5px;
-
-    font-family: -apple-system, sans-serif;
-
-}
-
-
-
-/* --- 保持你喜欢的复古绿色按钮样式 (image_72ca7b.png) --- */
-
-.email-button {
-
-    display: block;
-
-    width: 100%;
-
-    padding: 16px;
-
-    background-color: #5e9c64; /* 复古绿 */
-
-    color: #ffffff;
-
-    text-align: center;
-
-    border-radius: 12px; /* 圆角增加厚实感 */
-
-    font-weight: 700;
-
-    font-size: 1.1rem;
-
-    border: none;
-
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-
-    cursor: pointer;
-
-    transition: all 0.2s ease;
-
+    color: #999;
+    margin-left: 4px;
 }
 
 
@@ -238,6 +163,17 @@ body {
 
 }
 
+/* Header nav link defaults (matches store page) */
+.main-header .nav-links a {
+    text-decoration: none;
+    color: #444;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+}
+
 /* =========================================
 
    2. 桌面端展示 (> 850px)
@@ -245,60 +181,19 @@ body {
    ========================================= */
 
 @media (min-width: 851px) {
-
-    .nav-toggle { display: none; } /* 隐藏三条杠 */
-
-/* --- 导航链接间距优化 --- */
-
-.nav-links {
-
-    display: flex;
-
-    gap: 2rem; /* 使用 rem 单位，随字号缩放 */
-
-    list-style: none;
-
-    align-items: center;
-
-}
-
-
+    .nav-toggle { display: none; }
 
     .nav-links {
-
         display: flex;
-
+        gap: 2rem;
         list-style: none;
-
-        gap: 25px;
-
+        align-items: center;
         margin: 0;
-
         padding: 0;
-
     }
 
-
-
-    .nav-links li a {
-
-        text-decoration: none;
-
-        color: #444;
-
-        font-size: 0.85rem;
-
-        font-weight: 600;
-
-        text-transform: uppercase;
-
-        letter-spacing: 0.5px;
-
-    }
-
+    .nav-links li a { font: inherit; }
 }
-
-
 
 /* =========================================
 
@@ -307,112 +202,59 @@ body {
    ========================================= */
 
 @media (max-width: 850px) {
-
-    /* 强制显示三条杠按钮 */
-
     .nav-toggle {
-
         display: block !important;
-
         background: transparent;
-
         border: none;
-
         cursor: pointer;
-
         padding: 10px;
-
         z-index: 3000;
-
         position: relative;
-
     }
 
-
-
     .hamburger, .hamburger::before, .hamburger::after {
-
         display: block;
-
         background: #333;
-
         width: 25px;
-
         height: 3px;
-
         border-radius: 3px;
-
         transition: all 0.3s ease;
-
     }
 
     .hamburger { position: relative; }
-
     .hamburger::before, .hamburger::after { content: ''; position: absolute; left: 0; }
-
     .hamburger::before { top: -8px; }
-
     .hamburger::after { bottom: 8px; }
 
-
-
-    /* 全屏菜单逻辑 */
-
     .nav-links {
-
-        display: none; /* 默认关闭 */
-
+        display: none;
         flex-direction: column;
-
         position: fixed;
-
         top: 0;
-
         right: 0;
-
         height: 100vh;
-
-        width: 80%; /* 弹出占屏幕80% */
-
+        width: 80%;
         background: white;
-
         box-shadow: -10px 0 30px rgba(0,0,0,0.15);
-
         padding: 100px 40px;
-
         list-style: none;
-
         z-index: 2500;
-
     }
 
-
-
-    .nav-open .nav-links { display: flex; } /* 展开状态 */
-
+    .nav-open .nav-links { display: flex; }
     .nav-links li { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-
     .nav-links a { font-size: 1.2rem; text-decoration: none; color: #333; font-weight: 700; }
 
-
-
-/* 展开菜单后，三条杠不旋转，直接变灰色 */
-.nav-open .hamburger,
-.nav-open .hamburger::before,
-.nav-open .hamburger::after {
-    background: #999 !important; /* 变成灰色 */
-    transform: none !important;  /* 强制取消旋转动画 */
-}
-
-
-    /* 商店页搜索框专属防跳动 */
+    .nav-open .hamburger,
+    .nav-open .hamburger::before,
+    .nav-open .hamburger::after {
+        background: #999 !important;
+        transform: none !important;
+    }
 
     .search-bar { flex: 0 1 120px; transition: all 0.4s ease; }
-
     .search-bar:focus-within { flex: 1; }
-
     .search-bar:focus-within ~ .store-label { display: none; }
-
 }
 
 
@@ -424,32 +266,20 @@ body {
    ========================================= */
 
 .email-button {
-
     display: block;
-
     width: 100%;
-
     padding: 15px;
-
     background-color: #5e9c64; /* 复古绿 */
-
-    color: white;
-
+    color: #ffffff;
     text-align: center;
-
     border-radius: 12px;
-
     font-weight: 700;
-
     font-size: 1.1rem;
-
     border: none;
-
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-
     cursor: pointer;
-
     margin-top: 15px;
+    transition: all 0.18s ease;
 
 }
 
@@ -575,39 +405,23 @@ body {
 
 /* 右上角蓝色角标样式 */
 
-.cart-badge {
-
-    position: absolute;
-
-    top: -8px;
-
-    left: -12px;
-
-    background-color: #007bff; /* 蓝色背景 */
-
-    color: white;              /* 白色数字 */
-
-    font-size: 0.7rem;
-
-    font-weight: bold;
-
-    min-width: 18px;
-
-    height: 18px;
-
-    border-radius: 50%;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-
-}
+.cart-badge { /* Duplicate removed; see unified definition under cart-icon-container later. */ }
 
 /* --- 搜索框样式优化 --- */
+
+.search-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.page-store .search-bar {
+    visibility: visible;
+    pointer-events: auto;
+}
 
 .search-bar input {
 
@@ -646,13 +460,10 @@ body {
 /* --- 商店页特有的居中布局处理 --- */
 
 .store-search-centering {
-
+    width: 100%;
+    max-width: 520px;
+    margin: 0 20px;
     flex: 1;
-
-    max-width: 500px; /* 桌面端限制搜索框最大宽度 */
-
-    margin: 0 40px;   /* 与左右元素拉开间距 */
-
 }
 
 
@@ -796,6 +607,42 @@ body {
 
     color: #444;
 
+}
+
+/* -----------------------------------------
+   Warranty / Service block styles
+   美化产品详情页的保修与服务区（响应式）
+   ----------------------------------------- */
+.detail-section#warranty { padding-top: 30px; padding-bottom: 40px; }
+.warranty-block {
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(10,20,30,0.06);
+    border: 1px solid #efefef;
+    color: #222;
+    line-height: 1.7;
+    font-size: 0.96rem;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+.warranty-block h5 {
+    margin: 18px 0 8px;
+    font-size: 1.06rem;
+    color: #111;
+    letter-spacing: 0.2px;
+}
+.warranty-block p { margin-bottom: 12px; color: #444; }
+.warranty-block ul, .warranty-block ol { margin: 8px 0 14px 1.1rem; color: #444; }
+.warranty-block li { margin-bottom: 8px; }
+.warranty-block strong { color: #111; }
+
+@media (min-width: 900px) {
+    .warranty-block { padding: 32px; font-size: 1rem; }
+}
+
+@media print {
+    .warranty-block { box-shadow: none; border: none; background: transparent; }
 }
 
 
@@ -946,49 +793,7 @@ body {
 
 
 
-/* --- 全局容器优化 --- */
-
-.container {
-
-    max-width: 1200px; /* 限制最大宽度，防止大屏过散 */
-
-    margin: 0 auto;    /* 居中对齐 */
-
-    padding: 0 25px;   /* 核心修复：为两侧增加 25px 的安全留白 */
-
-    width: 100%;       /* 确保占满宽度 */
-
-    box-sizing: border-box; /* 确保 padding 不撑大容器 */
-
-}
-
-
-
-/* --- Header 布局微调 --- */
-
-.main-header {
-
-    width: 100%;
-
-    border-bottom: 1px solid #eee; /* 增加细线增加层次感 */
-
-    background: #fff;
-
-}
-
-
-
-.header-grid {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    height: 80px; /* 统一高度，更稳重 */
-
-}
+/* Removed duplicate container/header overrides to keep a single source of truth. */
 
 
 

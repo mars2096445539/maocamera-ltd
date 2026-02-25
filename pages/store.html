@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store - maocamera ltd</title>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="/js/badge-header.js"></script>
+    <style>
+    /* 仅保留产品列表相关的样式，删除关于 header-grid 的固定定义 */
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 30px;
+        margin-top: 40px;
+    }
+    .product-card {
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: transform 0.3s ease;
+    }
+    .product-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    .product-img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background: #f9f9f9; }
+    .product-info { padding: 15px; }
+    .product-name { font-weight: 600; margin-bottom: 5px; }
+    .product-price { color: #007bff; font-weight: 700; }
+</style>
+</head>
+<body class="page-store">
+    <div id="badge-header-placeholder"></div>
+    <main class="container">
+        <div id="productGrid" class="product-grid">
+            </div>
+    </main>
+    <footer class="main-footer">
+        <p>&copy; 2025 Mao Camera Limited Liability Company. All Rights Reserved.</p>
+    </footer>
+    <script src="/js/cart-logic.js"></script>
+    <script src="/js/store-logic.js"></script>
+    <script src="/js/badge-sync.js"></script>
+</body>
+</html>

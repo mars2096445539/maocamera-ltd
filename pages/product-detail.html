@@ -39,7 +39,48 @@
             <h4>DESCRIPTION</h4>
             <div id="imageStrip"></div>
         </section>
+        
+            <section class="detail-section" id="warranty">
+                <h4>SERVICE & WARRANTY / 服务与保修</h4>
+                <article class="warranty-block">
+                    <h5>30-Day Defective Return & Exchange / 30天性能故障退换</h5>
+                    <p>Within <strong>30 days</strong> of delivery, if the product experiences a manufacturing defect, customers may request a full refund or an exchange for the same model. <br>自产品签收之日起 <strong>30日</strong> 内，若出现非人为性能故障，消费者可选择更换或全额退款。</p>
+                    <ul>
+                        <li><strong>Shipping:</strong> MAO CAMERA LTD covers shipping costs for defective returns; a prepaid shipping label will be sent by email. / 我们承担退换货运费，并通过预付运单发送标签。</li>
+                    </ul>
+
+                    <h5>30-Day General Return for Refund / 30天无理由退货</h5>
+                    <p>Within <strong>30 days</strong> of delivery, customers may return the product for a refund for any reason (e.g., change of mind). / 自签收之日起 30 日内，消费者可申请退货退款（例如个人喜好变更）。</p>
+                    <ul>
+                        <li><strong>Conditions:</strong> Product must be in original, brand-new condition with all packaging, accessories, and gifts included. / 产品须保持原状并包含全部配件与包装。</li>
+                        <li><strong>Shipping Cost:</strong> For general returns under this 30-day policy, the consumer is responsible for all return shipping costs. / 非质量问题退货运费由消费者承担。</li>
+                        <li><strong>Exclusions:</strong> Products showing signs of use, missing accessories, or damaged packaging may be subject to a restocking fee or rejection. / 有使用痕迹、缺件或包装损坏可能收取补货费或拒绝退货。</li>
+                    </ul>
+
+                    <h5>6-Year Limited Warranty / 6年有限质保</h5>
+                    <p>For <strong>6 years</strong> from purchase (1 year for accessories), MAO CAMERA LTD provides warranty services for non-accidental manufacturing defects. / 自购买之日起 6 年内（配件 1 年），提供制造缺陷保修服务。</p>
+                    <ol>
+                        <li><strong>Remote Assessment:</strong> Provide photos or videos for a preliminary technical evaluation. / 提供故障照片或视频以供初步评估。</li>
+                        <li><strong>US Local Priority Repair:</strong> If repairable locally, we provide free repair services in the US. / 若本地可维修，提供本地优先维修服务。</li>
+                        <li><strong>Factory Assistance:</strong> If issue exceeds local capabilities, we facilitate return to factory for professional restoration. / 超出本地能力时协助返厂修复，具体时间依国际物流与产能而定。</li>
+                        <li><strong>Free Shipping & Electronic Labels:</strong> During warranty, we cover authorized repair shipping costs and send prepaid electronic labels to your email. / 保修期内我们承担来回运费并通过邮箱发送预付运单标签。</li>
+                    </ol>
+
+                    <h5>Lifetime Maintenance / 终身维护服务</h5>
+                    <ul>
+                        <li><strong>Labor-Free Maintenance:</strong> No labor charges for the lifetime of the product. / 终身免除维修人工费用。</li>
+                        <li><strong>Transparent Costs:</strong> Customers cover replacement part costs and shipping after warranty expiration. / 保外仅收配件及物流费用。</li>
+                    </ul>
+
+                    <h5>Exclusions & Limitation of Liability / 责任免责与限制</h5>
+                    <p>Warranty does not cover damage from overloading, extreme environments, accidental drops, or unauthorized modifications. Cosmetic changes from normal use are not considered defects. / 不包含超负荷、极端环境、意外跌落或未经授权改装导致的损坏；正常使用产生的外观磨损不属于缺陷。</p>
+                </article>
+            </section>
     </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2025 Mao Camera Limited Liability Company. All Rights Reserved.</p>
+    </footer>
 
 <script>
     const params = new URLSearchParams(window.location.search);
@@ -47,7 +88,7 @@
     const mainContent = document.getElementById('mainContent');
 
     if (!productId) {
-        mainContent.innerHTML = '<div class="error-msg">No product ID. Go back to <a href="equipment-store.html">Store</a>.</div>';
+        mainContent.innerHTML = '<div class="error-msg">No product ID. Go back to <a href="store.html">Store</a>.</div>';
     } else {
         fetch('../data/products.json')
             .then(res => res.json())

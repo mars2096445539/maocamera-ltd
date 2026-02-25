@@ -5,79 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>maocamera ltd - Film Development Service</title>
     <link rel="stylesheet" href="styles.css">
-    
     <script src="/js/badge-header.js"></script>
 </head>
-<body>
+<body class="page-home">
 
     <div id="badge-header-placeholder"></div>
 
     <main class="container">
-        <section class="price-list">
-            <h2>Film Development and Scanning Quotes</h2>
-            <p class="subtitle">We Offer High Standard and Quality Service</p>
-            
-        <table>
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Price ($)</th>
-                    <th>Notes</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>C-41 Color Negative (35mm/120)</td>
-                    <td>14</td>
-                    <td>Development Only</td>
-                </tr>
-                <tr>
-                    <td>C-41 Roll Film Development and Standard Scanning</td>
-                    <td>18/24</td>
-                    <td>JPEG, 24 mp/48 mp</td>
-                </tr>
-                <tr>
-                    <td>Sheet Film Development</td>
-                    <td>5~10</td>
-                    <td>5 per 4x5, 10 per 8x10, Applicable to C41, B&W and E-6</td>
-                </tr>
-                <tr>
-                    <td>B&W Development (35mm/120)</td>
-                    <td>8</td>
-                    <td>Multiple Developer for Choice</td>
-                </tr>
-                <tr>
-                    <td>B&W Development and Standard Scanning</td>
-                    <td>12/16</td>
-                    <td>JPEG, 120/35mm 48 mp</td>
-                </tr>
-                <tr>
-                    <td>Sheet Film Scanning</td>
-                    <td>5~20</td>
-                    <td>Based on requirement</td>
-                </tr>
-                <tr>
-                    <td>E-6 Slide Film Development (35mm/120)</td>
-                    <td>14</td>
-                    <td>Development Only</td>
-                </tr>
-                <tr>
-                    <td>ECN-2 Motion Film Development (35mm/120)</td>
-                    <td>15</td>
-                    <td>Price listed is for older type ecn-2, New ones without carbon layer costs 12</td>
-                </tr>
-            </tbody>
-        </table>
-            
-            <div class="notes">
-                <p><strong>*Please note:</strong></p>
-                <ul>
-                    <li>Above standard prices are listed, in need of pushing and pulling requires an additional fee of $3 per roll/sheet</li>
-                    <li>Scanned Files will be delivered through Google Drive by email</li>
-                    <li>CONTACT <strong id="copy-email-in-li" style="color: #007bff; text-decoration: underline; cursor: pointer;">tianqin@maocamera.com</strong> For All SERVICES</li>
-                </ul>
-            </div>
-        </section>
     </main>
 
     <footer class="main-footer">
@@ -85,18 +19,5 @@
     </footer>
 
     <script src="/js/cart-logic.js"></script>
-    <script>
-        // 邮箱点击复制逻辑
-        const copyEmailInLi = document.getElementById('copy-email-in-li');
-        if (copyEmailInLi) { 
-            copyEmailInLi.addEventListener('click', (e) => {
-                e.stopPropagation(); 
-                const emailToCopy = copyEmailInLi.textContent.trim();
-                navigator.clipboard.writeText(emailToCopy).then(() => {
-                    alert('邮箱已复制: ' + emailToCopy);
-                });
-            });
-        }
-    </script>
 </body>
 </html>

@@ -5,10 +5,10 @@
     "name": "XB-2R BALLHEAD",
     "cn_name": "xb2r球形云台",
     "price": "159.00",
-    "stock": 0,
+    "stock": 2,
     "category": "Ballhead",
     "cover_image": "/img/products/xb2r-main.jpg",
-    "specs": { "type": "Ballhead", "quick_release": "Arca-Swiss" },
+    "specs": { "type": "Ballhead", "quick_release": "Arca-Swiss", "Base thread": "3/8\"" },
     "detail_images": ["/img/products/xb2r-detail-1.jpg"]
   },
   {
@@ -20,7 +20,7 @@
     "stock": 2,
     "category": "Ballhead",
     "cover_image": "/img/products/xb1r-main.jpg",
-    "specs": { "type": "Ballhead", "quick_release": "Arca-Swiss" },
+    "specs": { "type": "Ballhead", "quick_release": "Arca-Swiss", "Base thread": "3/8\"" },
     "detail_images": ["/img/products/xb1r-detail-1.jpg"]
   },
   {
@@ -32,7 +32,7 @@
     "stock": 3,
     "category": "Fluidhead",
     "cover_image": "/img/products/sv35-main.jpg",
-    "specs": { "type": "Fluidhead", "plate": "Manfrotto" },
+    "specs": { "type": "Fluidhead", "quick_release": "Manfrotto", "Base thread": "3/8\""  },
     "detail_images": ["/img/products/sv35-detail-1.jpg"]
   },
   {
@@ -44,7 +44,7 @@
     "stock": 4,
     "category": "Gearhead",
     "cover_image": "/img/products/md3-main.jpg",
-    "specs": { "type": "Gearhead", "adjustment": "3-Way" },
+    "specs": { "type": "Gearhead", "adjustment": "3-Way", "Base thread": "3/8"  },
     "detail_images": ["/img/products/md3-detail-1.jpg"]
   },
   {
@@ -128,7 +128,7 @@
     "stock": 1,
     "category": "Tripod",
     "cover_image": "/img/products/mt33s-main.jpg",
-    "specs": { "material": "Carbon Fiber", "style": "Compact" },
+    "specs": { "material": "Carbon Fiber", "style": "Heavy duty" },
     "detail_images": ["/img/products/mt33s-detail-1.jpg"]
   }
 ]
