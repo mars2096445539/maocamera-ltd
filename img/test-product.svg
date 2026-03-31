@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1200" viewBox="0 0 1200 1200" role="img" aria-label="Test Product">
+  <rect width="1200" height="1200" fill="#f2f2f2"/>
+  <rect x="80" y="80" width="1040" height="1040" rx="40" fill="#ffffff" stroke="#d9d9d9" stroke-width="8"/>
+  <text x="600" y="520" text-anchor="middle" font-family="Arial, sans-serif" font-size="92" fill="#111111">TEST PRODUCT</text>
+  <text x="600" y="640" text-anchor="middle" font-family="Arial, sans-serif" font-size="72" fill="#555555">1 USD</text>
+</svg>

@@ -4,44 +4,121 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Successful - maocamera ltd</title>
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="/styles.css">
     
     <style>
         .success-container {
-            max-width: 600px;
-            margin: 100px auto;
-            text-align: center;
-            padding: 40px 20px;
+            max-width: 860px;
+            margin: 60px auto;
+            padding: 20px;
         }
 
-        /* 成功图标：使用简单的 CSS 绘制一个绿圈勾 */
         .success-icon {
             width: 80px;
             height: 80px;
-            background-color: #5e9c64; /* 你的加购按钮绿色 */
+            background-color: #5e9c64;
             color: white;
             font-size: 50px;
             line-height: 80px;
             border-radius: 50%;
             display: inline-block;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
-        h2 { font-weight: 900; font-size: 2rem; margin-bottom: 10px; }
-        p { color: #666; margin-bottom: 40px; }
+        .success-head {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        h2 { font-weight: 900; font-size: 2rem; margin: 0 0 8px 0; }
+        p { color: #666; margin: 0; }
+
+        .order-card {
+            background: #fff;
+            border: 1px solid #ececec;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .order-title {
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .order-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        .order-table th,
+        .order-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #f0f0f0;
+            text-align: left;
+        }
+
+        .order-table th:last-child,
+        .order-table td:last-child {
+            text-align: right;
+        }
+
+        .order-totals {
+            margin-top: 18px;
+            max-width: 320px;
+            margin-left: auto;
+        }
+
+        .order-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            color: #444;
+        }
+
+        .order-row.total {
+            font-weight: 900;
+            font-size: 1.05rem;
+            border-top: 1px solid #e9e9e9;
+            margin-top: 6px;
+            padding-top: 10px;
+            color: #000;
+        }
+
+        .status-text {
+            color: #555;
+            font-size: 0.95rem;
+            margin-top: 8px;
+        }
 
         .back-home-btn {
             display: inline-block;
             background: #000;
             color: #fff;
             padding: 15px 40px;
-            border-radius: 30px; /* 保持 30px 大圆角一致性 */
+            border-radius: 30px;
             text-decoration: none;
             font-weight: 800;
             transition: transform 0.2s;
+            margin-top: 20px;
         }
 
         .back-home-btn:hover { transform: scale(1.05); }
+
+        @media (max-width: 700px) {
+            .success-container { margin: 30px auto; }
+            .order-table th:nth-child(3), .order-table td:nth-child(3) { display: none; }
+        }
     </style>
 
     <script src="/js/badge-header.js"></script>
@@ -51,11 +128,35 @@
     <div id="badge-header-placeholder"></div>
 
     <main class="success-container">
-        <div class="success-icon">✓</div>
-        <h2>THANK YOU!</h2>
-        <p>Your payment has been processed successfully.<br>
-           An order confirmation has been sent to your email.</p>
-        
+        <div class="success-head">
+            <div class="success-icon">✓</div>
+            <h2>THANK YOU!</h2>
+            <p>Your payment has been processed successfully.</p>
+        </div>
+
+        <section class="order-card">
+            <div class="order-header">
+                <div class="order-title">ORDER DETAILS</div>
+                <div id="invoiceText">Invoice: --</div>
+            </div>
+
+            <div id="orderStatus" class="status-text">Loading order details...</div>
+
+            <table class="order-table" id="orderTable" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Qty</th>
+                        <th>Unit Price</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody id="orderItemsBody"></tbody>
+            </table>
+
+            <div class="order-totals" id="orderTotals" style="display:none;"></div>
+        </section>
+
         <a href="/" class="back-home-btn">CONTINUE SHOPPING</a>
     </main>
 
@@ -64,17 +165,101 @@
     </footer>
 
     <script>
-        /**
-         * 核心逻辑：清空购物车
-         */
+        function formatMoney(value) {
+            return `$${Number(value || 0).toFixed(2)}`;
+        }
+
+        function getOrderSnapshotFromLocal(invoiceNumber) {
+            const snapshots = JSON.parse(localStorage.getItem('maocamera_order_snapshots') || '{}');
+            const entry = snapshots[invoiceNumber];
+            return entry || null;
+        }
+
+        function renderOrder(invoiceNumber, items, subtotal, tax, total) {
+            let taxRate = arguments.length > 5 ? arguments[5] : 0.09;
+            let shippingCost = arguments.length > 6 ? arguments[6] : 0;
+            const body = document.getElementById('orderItemsBody');
+            const totals = document.getElementById('orderTotals');
+            const table = document.getElementById('orderTable');
+            const status = document.getElementById('orderStatus');
+
+            body.innerHTML = items.map(item => {
+                const qty = Number.parseInt(item.quantity, 10) || 0;
+                const unit = Number.parseFloat(item.price || 0);
+                const line = unit * qty;
+                return `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${qty}</td>
+                        <td>${formatMoney(unit)}</td>
+                        <td>${formatMoney(line)}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            const shippingLabel = shippingCost > 0 ? 'Expedited Shipping' : 'Shipping';
+            const shippingValue = shippingCost > 0 ? formatMoney(shippingCost) : 'FREE';
+
+            totals.innerHTML = `
+                <div class="order-row"><span>Subtotal</span><span>${formatMoney(subtotal)}</span></div>
+                <div class="order-row"><span>${shippingLabel}</span><span>${shippingValue}</span></div>
+                <div class="order-row"><span>Tax (${(Number(taxRate || 0) * 100).toFixed(2)}%)</span><span>${formatMoney(tax)}</span></div>
+                <div class="order-row total"><span>Total</span><span>${formatMoney(total)}</span></div>
+            `;
+
+            table.style.display = '';
+            totals.style.display = '';
+            status.textContent = 'A confirmation email has been sent by the payment gateway.';
+            document.getElementById('invoiceText').textContent = `Invoice: ${invoiceNumber}`;
+        }
+
+        async function loadOrderDetails(invoiceNumber) {
+            const status = document.getElementById('orderStatus');
+            try {
+                const response = await fetch(`/api/order-details?invoice=${encodeURIComponent(invoiceNumber)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    renderOrder(data.invoiceNumber, data.items, data.subtotal, data.tax, data.total, data.taxRate, data.shippingCost || 0);
+                    return;
+                }
+            } catch (error) {
+                console.error(error);
+            }
+
+            const localSnapshot = getOrderSnapshotFromLocal(invoiceNumber);
+            if (localSnapshot?.items?.length) {
+                const subtotal = Number(localSnapshot.items.reduce((sum, item) => {
+                    const price = Number.parseFloat(item.price || 0);
+                    const qty = Number.parseInt(item.quantity, 10) || 0;
+                    return sum + price * qty;
+                }, 0).toFixed(2));
+                const localTaxRate = Number.isFinite(localSnapshot.taxRate) ? Number(localSnapshot.taxRate) : 0.09;
+                const localShippingCost = Number.isFinite(localSnapshot.shippingCost) ? Number(localSnapshot.shippingCost) : 0;
+                const tax = Number((subtotal * localTaxRate).toFixed(2));
+                const total = Number((subtotal + tax + localShippingCost).toFixed(2));
+                renderOrder(invoiceNumber, localSnapshot.items, subtotal, tax, total, localTaxRate, localShippingCost);
+                status.textContent = 'Showing cached order details from this browser.';
+                return;
+            }
+
+            document.getElementById('invoiceText').textContent = `Invoice: ${invoiceNumber}`;
+            status.textContent = 'Order details are not available yet. Please refresh in a moment.';
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
-            // 1. 支付成功后，彻底移除本地存储中的购物车数据
             localStorage.removeItem('maocamera_cart');
-            
-            // 2. 强制刷新顶部角标，让它显示为空（或消失）
+
             if (window.syncCartBadge) {
                 window.syncCartBadge();
             }
+
+            const invoice = new URLSearchParams(window.location.search).get('invoice');
+            if (!invoice) {
+                document.getElementById('orderStatus').textContent = 'Order number missing. Please check your confirmation email.';
+                return;
+            }
+
+            loadOrderDetails(invoice);
         });
     </script>
 </body>

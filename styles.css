@@ -2,63 +2,17 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;900&display=swap');
 
-
-
 /* --- 更新 Logo 样式，强制使用 Inter --- */
-
-.logo {
-
-    font-family: 'Inter', -apple-system, sans-serif !important;
-
-    font-size: 1.6rem;
-
-    font-weight: 900; /* 极粗 */
-
-    letter-spacing: -0.5px;
-
-}
-
-
-
-.logo a { color: #000; text-decoration: none; }
-
-
-
-.logo span {
-
-    font-weight: 300; /* 极细 */
-
-    color: #999;
-
-    margin-left: 4px;
-
-}
-
-
-
-/* --- 确保蓝标样式存在 --- */
-
-.cart-icon-container {
-
-    position: relative;
-
-    display: inline-flex;
-
-    align-items: center;
-
-}
-
-
-
-.cart-badge { /* Consolidated definition appears later; this earlier duplicate removed. */ }
-
-
 
 /* =========================================
    1. 基础布局与全局变量
    ========================================= */
 html {
     overflow-y: scroll; /* Keep layout width consistent across pages */
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
 }
 
 body {
@@ -84,8 +38,6 @@ main {
     width: 100%;
 }
 
-
-
 .container {
 
     max-width: 1100px;
@@ -95,7 +47,6 @@ main {
     padding: 0 20px;
 
 }
-
 
     /* Logo styles consolidated above; duplicate removed. */
     /* #buyNowBtn remains defined later if page-specific override is needed. */
@@ -123,8 +74,6 @@ main {
 .main-nav { justify-self: end; }
 .search-bar { justify-self: center; }
 
-
-
 /* --- 品牌 Logo 样式：精准匹配 image_725335.png --- */
 
 .logo {
@@ -133,11 +82,9 @@ main {
     font-size: 1.6rem;
     font-weight: 900;
     letter-spacing: -0.5px;
-    font-family: 'Inter', -apple-system, sans-serif;
+    font-family: 'Inter', -apple-system, sans-serif !important;
     flex-shrink: 0;
 }
-
-
 
 .logo a {
 
@@ -147,15 +94,11 @@ main {
 
 }
 
-
-
 .logo span {
     font-weight: 300; /* ltd 使用细体 */
     color: #999;
     margin-left: 4px;
 }
-
-
 
 #buyNowBtn {
 
@@ -202,6 +145,11 @@ main {
    ========================================= */
 
 @media (max-width: 850px) {
+    .header-grid {
+        gap: 10px;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+    }
+
     .nav-toggle {
         display: block !important;
         background: transparent;
@@ -252,12 +200,13 @@ main {
         transform: none !important;
     }
 
-    .search-bar { flex: 0 1 120px; transition: all 0.4s ease; }
-    .search-bar:focus-within { flex: 1; }
-    .search-bar:focus-within ~ .store-label { display: none; }
+    .search-bar {
+        flex: 1 1 auto;
+        min-width: 140px;
+        transition: all 0.25s ease;
+    }
+    .search-bar:focus-within { flex: 1 1 auto; }
 }
-
-
 
 /* =========================================
 
@@ -283,11 +232,7 @@ main {
 
 }
 
-
-
 /* --- 购物车页面专项样式 --- */
-
-
 
 /* 1. MY CART 字符样式 */
 
@@ -311,101 +256,7 @@ main {
 
 }
 
-
-
-/* 购物车布局容器 (两栏式) */
-
-.cart-content-wrapper {
-
-    display: flex;
-
-    gap: 40px;
-
-    align-items: flex-start;
-
-}
-
-
-
-.cart-items-section {
-
-    flex: 2; /* 商品列表占据更多宽度 */
-
-}
-
-
-
-.cart-summary-sidebar {
-
-    flex: 1; /* 侧边栏占 1/3 */
-
-    position: sticky;
-
-    top: 100px;
-
-}
-
-
-
-/* 结算按钮优化：保持之前的拟物化设计但使用黑色 */
-
-.checkout-button {
-
-    display: block;
-
-    width: 100%;
-
-    padding: 18px;
-
-    background-color: #000; /* 仿 Stripe 或 B&H 的黑色按钮 */
-
-    color: white;
-
-    text-align: center;
-
-    border-radius: 12px;
-
-    font-weight: 800;
-
-    border: none;
-
-    cursor: pointer;
-
-    transition: transform 0.2s;
-
-}
-
-
-
-.checkout-button:hover {
-
-    transform: scale(1.02);
-
-}
-
-
-
-/* 移动端适配：将两栏改为一栏 */
-
-@media (max-width: 800px) {
-
-    .cart-content-wrapper {
-
-        flex-direction: column;
-
-    }
-
-    .cart-page-title {
-
-        font-size: 1.8rem;
-
-    }
-
-}
-
-/* 右上角蓝色角标样式 */
-
-.cart-badge { /* Duplicate removed; see unified definition under cart-icon-container later. */ }
+/* 购物车旧布局(cart-content-wrapper/cart-items-section)已移除，统一使用 cart-flex-wrapper */
 
 /* --- 搜索框样式优化 --- */
 
@@ -419,6 +270,11 @@ main {
 }
 
 .page-store .search-bar {
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.page-home .search-bar {
     visibility: visible;
     pointer-events: auto;
 }
@@ -443,8 +299,6 @@ main {
 
 }
 
-
-
 .search-bar input:focus {
 
     border-color: #007bff;    /* 聚焦时显示为您喜欢的复古绿色 */
@@ -455,8 +309,6 @@ main {
 
 }
 
-
-
 /* --- 商店页特有的居中布局处理 --- */
 
 .store-search-centering {
@@ -466,22 +318,17 @@ main {
     flex: 1;
 }
 
-
-
 /* --- 移动端防跳动保持 --- */
 
 @media (max-width: 850px) {
     .store-search-centering {
-        /* 核心修复：将 margin-right 增加到 30px，强行拉开与横线的距离 */
-        margin: 0 30px 0 10px; 
-        
-        /* 动态限制最大宽度，给左侧 Logo 和右侧横线预留固定空间 */
-        max-width: calc(100% - 160px); 
+        margin: 0 8px;
+        max-width: none;
+        min-width: 140px;
     }
-    
+
     .store-search-centering:focus-within {
-        /* 聚焦时也不要完全占满，保留右侧 30px 间距防止挡住“退出”点击 */
-        max-width: calc(100% - 100px); 
+        max-width: none;
     }
 }
 
@@ -496,8 +343,6 @@ main {
     align-items: center;
 
 }
-
-
 
 .cart-badge {
 
@@ -549,37 +394,9 @@ main {
 
 }
 
-
-
 .cart-items-list { flex: 2; }
 
 .cart-summary-sidebar { flex: 1; position: sticky; top: 100px; }
-
-
-
-/* 商品卡片样式 (参照 B&H) */
-
-.cart-item-card {
-
-    display: flex;
-
-    gap: 20px;
-
-    padding: 20px 0;
-
-    border-bottom: 1px solid #eee;
-
-}
-
-
-
-.cart-item-info { flex: 1; }
-
-.cart-item-name { font-weight: 700; font-size: 1.1rem; margin-bottom: 5px; }
-
-.cart-item-stock { color: #888; font-size: 0.9rem; } /* 灰色 In Stock */
-
-
 
 /* 汇总栏样式 */
 
@@ -594,8 +411,6 @@ main {
     border: 1px solid #eee;
 
 }
-
-
 
 .summary-row {
 
@@ -645,8 +460,6 @@ main {
     .warranty-block { box-shadow: none; border: none; background: transparent; }
 }
 
-
-
 .total-row {
 
     font-size: 1.4rem;
@@ -659,19 +472,19 @@ main {
 
 }
 
-
-
 .shipping-free { color: #5e9c64; font-weight: 700; }
 
-
-
 .checkout-button {
+
+    display: block;
 
     width: 100%;
 
     background: #000;
 
     color: #fff;
+
+    text-align: center;
 
     padding: 18px;
 
@@ -685,15 +498,13 @@ main {
 
     margin-top: 20px;
 
-    transition: transform 0.1s;
+    transition: transform 0.15s;
 
 }
 
-
+.checkout-button:hover { transform: scale(1.02); }
 
 .checkout-button:active { transform: scale(0.98); }
-
-
 
 /* 移动端适配 */
 
@@ -721,8 +532,6 @@ main {
 
 }
 
-
-
 .cart-item-img {
 
     width: 100px;
@@ -737,15 +546,11 @@ main {
 
 }
 
-
-
 .cart-item-info { flex: 1; }
 
 .cart-item-name { font-weight: 800; font-size: 1.1rem; margin-bottom: 5px; }
 
 .cart-item-stock { color: #888; font-size: 0.85rem; margin-bottom: 12px; }
-
-
 
 /* 数量控制按钮 */
 
@@ -787,17 +592,9 @@ main {
 
 }
 
-
-
 .cart-item-price { font-weight: 900; font-size: 1.2rem; }
 
-
-
 /* Removed duplicate container/header overrides to keep a single source of truth. */
-
-
-
-
 
 /* 窄屏适配 (平板/窄笔记本) */
 
@@ -821,4 +618,172 @@ main {
 
     }
 
+}
+
+/* 首页横向商品大图滚动 */
+.home-main {
+    padding-top: 28px;
+    padding-bottom: 32px;
+}
+
+.home-strip-section {
+    width: 100%;
+}
+
+.home-strip-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.home-strip-header h1 {
+    margin: 0;
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+}
+
+.home-strip-all-products {
+    color: #9a9a9a;
+    font-size: 0.9rem;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.home-strip-all-products:hover {
+    color: #7d7d7d;
+}
+
+@media (max-width: 900px) {
+    .home-strip-header {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        column-gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    .home-strip-header h1 {
+        min-width: 0;
+        font-size: clamp(1.05rem, 7vw, 1.35rem);
+        letter-spacing: 0.5px;
+        line-height: 1.15;
+    }
+
+    .home-strip-all-products {
+        white-space: nowrap;
+        font-size: 0.78rem;
+        letter-spacing: 0.35px;
+    }
+}
+
+.home-product-strip {
+    display: flex;
+    gap: 16px;
+    overflow-x: hidden;
+    padding-bottom: 8px;
+    scroll-snap-type: none;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.home-product-strip::-webkit-scrollbar {
+    display: none;
+}
+
+.home-product-card {
+    min-width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    background: #fff;
+    border: 1px solid #e9e9e9;
+    border-radius: 14px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    scroll-snap-align: start;
+}
+
+.home-product-image-wrap {
+    width: 100%;
+    aspect-ratio: 16/10;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.home-product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+.home-product-meta {
+    padding: 14px;
+}
+
+.home-product-name {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 8px;
+}
+
+.home-product-price-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.home-discount-badge {
+    font-size: 0.72rem;
+    color: #fff;
+    background: #333;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.home-sale-price {
+    color: #007bff;
+    font-weight: 700;
+}
+
+.home-original-price {
+    color: #999;
+    text-decoration: line-through;
+}
+
+@media (max-width: 520px) {
+    .home-strip-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 6px;
+    }
+
+    .home-strip-header h1 {
+        flex: 1 1 100%;
+        font-size: clamp(0.98rem, 8vw, 1.25rem);
+        line-height: 1.15;
+    }
+
+    .home-strip-all-products {
+        margin-left: auto;
+        padding-right: 2px;
+        font-size: 0.76rem;
+    }
+}
+
+@media (min-width: 900px) {
+    .home-product-card {
+        min-width: calc((100% - 16px) / 2);
+        max-width: calc((100% - 16px) / 2);
+    }
 }

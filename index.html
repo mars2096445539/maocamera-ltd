@@ -11,7 +11,14 @@
 
     <div id="badge-header-placeholder"></div>
 
-    <main class="container">
+    <main class="container home-main">
+        <section class="home-strip-section" aria-label="Featured products">
+            <div class="home-strip-header">
+                <h1>FEATURED PRODUCTS</h1>
+                <a href="/store" class="home-strip-all-products">ALL PRODUCTS</a>
+            </div>
+            <div id="homeProductStrip" class="home-product-strip" role="list"></div>
+        </section>
     </main>
 
     <footer class="main-footer">
@@ -19,5 +26,151 @@
     </footer>
 
     <script src="/js/cart-logic.js"></script>
+    <script>
+        let homeAutoScrollTimer = null;
+        let homeIsAnimating = false;
+        let homeProducts = [];
+
+        function easeInOutCubic(t) {
+            return t < 0.5
+                ? 4 * t * t * t
+                : 1 - Math.pow(-2 * t + 2, 3) / 2;
+        }
+
+        function animateStripScroll(strip, distance, duration) {
+            return new Promise(resolve => {
+                const startLeft = strip.scrollLeft;
+                const targetLeft = startLeft + distance;
+                const startTime = performance.now();
+
+                function frame(now) {
+                    const elapsed = now - startTime;
+                    const progress = Math.min(1, elapsed / duration);
+                    const eased = easeInOutCubic(progress);
+                    strip.scrollLeft = startLeft + (targetLeft - startLeft) * eased;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(frame);
+                    } else {
+                        resolve();
+                    }
+                }
+
+                requestAnimationFrame(frame);
+            });
+        }
+
+        function buildHomeProductCard(product) {
+            const salePrice = Number.parseFloat(product.price || 0);
+            const originalPrice = salePrice > 0 ? salePrice / 0.8 : 0;
+
+            const card = document.createElement('a');
+            card.href = `/product-detail?id=${encodeURIComponent(product.id)}`;
+            card.className = 'home-product-card';
+            card.setAttribute('role', 'listitem');
+            card.dataset.productId = product.id;
+            card.innerHTML = `
+                <div class="home-product-image-wrap">
+                    <img src="${product.cover_image}" alt="${product.name}" class="home-product-image">
+                </div>
+                <div class="home-product-meta">
+                    <div class="home-product-name">${product.name}</div>
+                    <div class="home-product-price-row">
+                        <span class="home-discount-badge">20% OFF</span>
+                        <span class="home-sale-price">$${salePrice.toFixed(2)}</span>
+                        <span class="home-original-price">$${originalPrice.toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        function pickRandomNextProduct(cardsInStrip) {
+            if (homeProducts.length === 0 || cardsInStrip.length === 0) return null;
+
+            const firstCard = cardsInStrip[0];
+            const idsInRemainingCards = new Set(
+                cardsInStrip.slice(1).map(card => card.dataset.productId)
+            );
+
+            let pool = homeProducts.filter(product => !idsInRemainingCards.has(product.id));
+            if (pool.length === 0) {
+                pool = homeProducts.filter(product => product.id === firstCard.dataset.productId);
+            }
+
+            const index = Math.floor(Math.random() * pool.length);
+            return pool[index] || null;
+        }
+
+        async function performHomeAutoStep() {
+            if (homeIsAnimating) return;
+
+            const strip = document.getElementById('homeProductStrip');
+            if (!strip) return;
+
+            const cards = Array.from(strip.querySelectorAll('.home-product-card'));
+            if (cards.length === 0) return;
+
+            const firstCard = cards[0];
+
+            const nextProduct = pickRandomNextProduct(cards);
+            if (!nextProduct) return;
+
+            const nextCard = buildHomeProductCard(nextProduct);
+            strip.appendChild(nextCard);
+
+            const stripStyle = window.getComputedStyle(strip);
+            const gap = Number.parseFloat(stripStyle.gap || '16') || 16;
+            const stepDistance = firstCard.getBoundingClientRect().width + gap;
+
+            homeIsAnimating = true;
+            await animateStripScroll(strip, stepDistance, 1400);
+            firstCard.remove();
+            strip.scrollLeft = Math.max(0, strip.scrollLeft - stepDistance);
+            homeIsAnimating = false;
+        }
+
+        function startHomeAutoScroll() {
+            const strip = document.getElementById('homeProductStrip');
+            if (!strip) return;
+
+            const cards = Array.from(strip.querySelectorAll('.home-product-card'));
+            if (cards.length <= 1) return;
+
+            if (homeAutoScrollTimer) {
+                clearInterval(homeAutoScrollTimer);
+            }
+
+            homeAutoScrollTimer = setInterval(performHomeAutoStep, 4800);
+        }
+
+        function renderHomeProducts(products) {
+            const strip = document.getElementById('homeProductStrip');
+            if (!strip) return;
+
+            homeProducts = products.slice();
+            strip.innerHTML = '';
+            homeProducts.forEach(product => {
+                strip.appendChild(buildHomeProductCard(product));
+            });
+
+            strip.scrollTo({ left: 0, behavior: 'auto' });
+            startHomeAutoScroll();
+        }
+
+        fetch('/data/products.json')
+            .then(response => {
+                if (!response.ok) throw new Error('Failed to load products');
+                return response.json();
+            })
+            .then(products => renderHomeProducts(products))
+            .catch(error => {
+                const strip = document.getElementById('homeProductStrip');
+                if (strip) {
+                    strip.innerHTML = '<p style="padding: 20px;">Unable to load products right now.</p>';
+                }
+                console.error(error);
+            });
+    </script>
 </body>
 </html>

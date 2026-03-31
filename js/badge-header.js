@@ -15,10 +15,10 @@ function injectGlobalHeader() {
                 <nav class="main-nav">
                     <button class="nav-toggle" aria-label="toggle navigation"><span class="hamburger"></span></button>
                     <ul class="nav-links">
-                        <li><a href="/pages/film-development.html">Development</a></li>
-                        <li><a href="/pages/store.html">Store</a></li>
+                        <li><a href="/film-development">Development</a></li>
+                        <li><a href="/store">Store</a></li>
                         <li>
-                            <a href="/pages/cart.html" class="cart-icon-container">
+                            <a href="/cart" class="cart-icon-container">
                                 <span id="cartBadge" class="cart-badge"></span>
                                 🛒 CART
                             </a>
@@ -32,6 +32,22 @@ function injectGlobalHeader() {
     // 绑定汉堡菜单
     const navToggle = placeholder.querySelector('.nav-toggle');
     if (navToggle) navToggle.onclick = () => document.body.classList.toggle('nav-open');
+
+    // 非 store 页：搜索框回车时跳转到 /store?q=...
+    const searchInput = document.getElementById('searchInput');
+    const isStorePage = !!document.getElementById('productGrid');
+    if (searchInput && !isStorePage) {
+        searchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const q = searchInput.value.trim();
+                if (q) {
+                    window.location.href = `/store?q=${encodeURIComponent(q)}`;
+                } else {
+                    window.location.href = '/store';
+                }
+            }
+        });
+    }
 
     // 页面加载时执行一次同步
     window.syncCartBadge();

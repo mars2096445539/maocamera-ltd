@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <title>Authorize.net Iframe Communicator</title>
+</head>
+<body>
+<script>
+    (function notifyParent() {
+        if (!window.location.hash || window.location.hash.length <= 1) return;
+        const querystr = window.location.hash.substring(1);
+        if (
+            window.parent
+            && window.parent.parent
+            && window.parent.parent.AuthorizeNetIFrame
+            && typeof window.parent.parent.AuthorizeNetIFrame.onReceiveCommunication === 'function'
+        ) {
+            window.parent.parent.AuthorizeNetIFrame.onReceiveCommunication(querystr);
+        }
+    })();
+</script>
+</body>
+</html>

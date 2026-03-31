@@ -4,10 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product Detail - maocamera ltd</title>
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="/styles.css">
     
     <script src="/js/badge-header.js"></script>
-    <script src="../js/cart-logic.js"></script>
+    <script src="/js/cart-logic.js"></script>
 
     <style>
         .detail-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
@@ -15,9 +15,21 @@
         .product-gallery { flex: 1; min-width: 300px; }
         .product-gallery img { width: 100%; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         .product-main-info { flex: 1; min-width: 300px; }
+        .detail-container,
+        .product-header,
+        .product-gallery,
+        .product-main-info,
+        .spec-mini-table,
+        .spec-item { box-sizing: border-box; }
         .brand-tag { color: #888; text-transform: uppercase; letter-spacing: 2px; font-size: 0.9rem; }
         .product-title { font-size: 2.5rem; margin: 10px 0; }
-        .price-tag { font-size: 1.8rem; color: #007bff; font-weight: 700; margin: 20px 0; }
+        .price-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 20px 0; }
+        .price-left { display: flex; align-items: center; gap: 12px; }
+        .discount-badge { font-size: 0.8rem; color: #fff; background: #333; padding: 4px 10px; border-radius: 999px; font-weight: 700; }
+        .price-tag { font-size: 1.8rem; color: #007bff; font-weight: 700; }
+        .old-price { color: #999; text-decoration: line-through; font-size: 1.1rem; }
+        .action-row { display: flex; gap: 15px; margin: 30px 0; }
+        .action-btn { flex: 1; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; }
         .spec-mini-table { border-top: 1px solid #eee; padding-top: 20px; }
         .spec-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #eee; }
         .spec-label { color: #666; font-weight: 500; }
@@ -25,6 +37,37 @@
         .detail-section h4 { text-align: center; letter-spacing: 5px; margin-bottom: 30px; color: #333; }
         #imageStrip img { width: 100%; display: block; margin-bottom: 10px; }
         .error-msg { text-align: center; padding: 100px 0; font-size: 1.2rem; color: #999; }
+
+        @media (max-width: 900px) {
+            .detail-container { padding: 14px; margin: 18px auto 32px; }
+            .product-header { gap: 20px; flex-direction: column; }
+            .product-gallery,
+            .product-main-info { min-width: 0; width: 100%; }
+            .product-gallery img { max-width: 100%; height: auto; }
+            .product-title { font-size: 2.1rem; line-height: 1.12; word-break: break-word; }
+            .price-row { flex-wrap: wrap; justify-content: flex-start; gap: 10px; }
+            .price-left { flex-wrap: wrap; }
+            .old-price { font-size: 1rem; }
+            .action-row { flex-direction: column; }
+            .action-btn { width: 100%; }
+            .spec-mini-table { width: 100%; overflow-x: hidden; }
+            .spec-item {
+                display: grid;
+                grid-template-columns: minmax(0, 44%) minmax(0, 56%);
+                gap: 10px;
+                align-items: flex-start;
+                width: 100%;
+            }
+            .spec-label { min-width: 0; overflow-wrap: anywhere; }
+            .spec-item span:last-child {
+                min-width: 0;
+                max-width: none;
+                text-align: right;
+                justify-self: end;
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
+        }
     </style>
 </head>
 <body>
@@ -86,11 +129,23 @@
     const params = new URLSearchParams(window.location.search);
     const productId = params.get('id');
     const mainContent = document.getElementById('mainContent');
+    let checkoutEnabled = true;
+
+    async function loadCheckoutStatus() {
+        try {
+            const res = await fetch('/api/checkout-status');
+            const data = await res.json();
+            checkoutEnabled = !!data.checkoutEnabled;
+        } catch (error) {
+            console.error('Checkout status check failed:', error);
+            checkoutEnabled = false;
+        }
+    }
 
     if (!productId) {
         mainContent.innerHTML = '<div class="error-msg">No product ID. Go back to <a href="store.html">Store</a>.</div>';
     } else {
-        fetch('../data/products.json')
+        loadCheckoutStatus().then(() => fetch('/data/products.json'))
             .then(res => res.json())
             .then(data => {
                 const product = data.find(p => p.id === productId);
@@ -122,10 +177,13 @@
         }
 
         // 2. 根据库存结果动态生成按钮样式和文字
-        const btnStyle = canPurchase 
+        const purchasable = canPurchase && checkoutEnabled;
+        const btnStyle = purchasable 
             ? "cursor: pointer; opacity: 1;" 
             : "cursor: not-allowed; opacity: 0.5; background-color: #666 !important;";
-        const btnText = canPurchase ? "PAY NOW" : "SOLD OUT / MAINTENANCE";
+        const btnText = checkoutEnabled
+            ? (canPurchase ? "PAY NOW" : "SOLD OUT / MAINTENANCE")
+            : "CHECKOUT CLOSED";
 
         // 3. 渲染主信息区（包含 11 件商品的对应名称和价格）
         document.getElementById('productHeader').innerHTML = `
@@ -135,15 +193,21 @@
             <div class="product-main-info">
                 <div class="brand-tag">${p.brand}</div>
                 <h2 class="product-title">${p.name}</h2>
-                <div class="price-tag">$${p.price}</div>
+                <div class="price-row">
+                    <div class="price-left">
+                        <span class="discount-badge">20% OFF</span>
+                        <span class="price-tag">$${Number.parseFloat(p.price).toFixed(2)}</span>
+                    </div>
+                    <span class="old-price">$${(Number.parseFloat(p.price) / 0.8).toFixed(2)}</span>
+                </div>
                 
-                <div style="display: flex; gap: 15px; margin: 30px 0;">
-                    <button id="addToCartBtn" class="email-button" ${!canPurchase ? 'disabled' : ''} 
-                        style="flex: 1; background-color: #333; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; ${btnStyle}">
+                <div class="action-row">
+                    <button id="addToCartBtn" class="email-button action-btn" ${!purchasable ? 'disabled' : ''} 
+                        style="background-color: #333; ${btnStyle}">
                         ADD TO CART
                     </button>
-                    <button id="buyNowBtn" class="email-button" ${!canPurchase ? 'disabled' : ''} 
-                        style="flex: 1; background-color: #007bff; border-radius: 12px; color: white; font-weight: 700; border: none; padding: 15px; ${btnStyle}">
+                    <button id="buyNowBtn" class="email-button action-btn" ${!purchasable ? 'disabled' : ''} 
+                        style="background-color: #007bff; ${btnStyle}">
                         ${btnText}
                     </button>
                 </div>
@@ -166,30 +230,63 @@
 
         // 5. 绑定事件：添加购物车
         document.getElementById('addToCartBtn').onclick = () => {
-            if (!canPurchase) return;
+            if (!checkoutEnabled || !canPurchase) return;
             addToCart(p); 
             // 注意：addToCart 内部已处理 Header 更新逻辑
         };
 
+        function redirectToEmbeddedCheckoutDraft(items, shippingAddress) {
+            if (!Array.isArray(items) || items.length === 0) return false;
+            sessionStorage.setItem('maocamera_embedded_checkout_draft', JSON.stringify({
+                items,
+                shippingAddress: shippingAddress || null,
+                billingSameAsShipping: true
+            }));
+            window.location.href = '/checkout-embedded';
+            return true;
+        }
+
+        function saveOrderSnapshot(invoiceNumber, items) {
+            if (!invoiceNumber || !Array.isArray(items)) return;
+            const shippingAddress = JSON.parse(localStorage.getItem('maocamera_shipping_address') || 'null');
+            const subtotal = Number(items.reduce((sum, item) => {
+                const qty = Number.parseInt(item.quantity, 10) || 0;
+                const price = Number.parseFloat(item.price || 0);
+                return sum + qty * price;
+            }, 0).toFixed(2));
+            const taxRate = Number(shippingAddress?.state === 'IL'
+                ? ((shippingAddress?.zip && ['61801','61802','61820','61821','61822'].includes(String(shippingAddress.zip).replace(/[^0-9]/g, '').slice(0,5))) ? 0.09 : 0.0625)
+                : 0);
+            const taxAmount = Number((subtotal * taxRate).toFixed(2));
+            const total = Number((subtotal + taxAmount).toFixed(2));
+            const snapshots = JSON.parse(localStorage.getItem('maocamera_order_snapshots') || '{}');
+            snapshots[invoiceNumber] = {
+                invoiceNumber,
+                items,
+                shippingAddress,
+                subtotal,
+                taxRate,
+                taxAmount,
+                total,
+                savedAt: Date.now()
+            };
+            localStorage.setItem('maocamera_order_snapshots', JSON.stringify(snapshots));
+        }
+
         // 6. 绑定事件：立即跳转 Stripe 支付
         document.getElementById('buyNowBtn').onclick = async () => {
-            if (!canPurchase) return;
+            if (!checkoutEnabled || !canPurchase) return;
             const btn = document.getElementById('buyNowBtn');
             btn.innerText = "LOADING...";
             btn.disabled = true;
 
             try {
+                const shippingAddress = JSON.parse(localStorage.getItem('maocamera_shipping_address') || 'null');
                 const instantItem = [{ id: p.id, name: p.name, price: parseFloat(p.price), quantity: 1 }];
-                const res = await fetch('/api/create-checkout-session', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ items: instantItem })
-                });
-                
-                if (!res.ok) throw new Error("Payment server error");
-                
-                const session = await res.json();
-                if (session.url) window.location.href = session.url;
+                if (redirectToEmbeddedCheckoutDraft(instantItem, shippingAddress)) {
+                    return;
+                }
+                throw new Error("Missing payment redirect information");
             } catch (err) {
                 alert("Checkout failed. Please try again.");
                 btn.innerText = "PAY NOW";

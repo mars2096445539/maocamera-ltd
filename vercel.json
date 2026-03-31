@@ -1,0 +1,207 @@
+{
+  "redirects": [
+    {
+      "source": "/pages/equipment-store.html",
+      "destination": "/store",
+      "permanent": true
+    },
+    {
+      "source": "/pages/:slug.html",
+      "destination": "/:slug",
+      "permanent": true
+    },
+    {
+      "source": "/pages/:slug",
+      "destination": "/:slug",
+      "permanent": true
+    },
+    {
+      "source": "/pages/cart",
+      "destination": "/cart",
+      "permanent": true
+    },
+    {
+      "source": "/pages/cart.html",
+      "destination": "/cart",
+      "permanent": true
+    },
+    {
+      "source": "/pages/checkout-embedded",
+      "destination": "/checkout-embedded",
+      "permanent": true
+    },
+    {
+      "source": "/pages/checkout-embedded.html",
+      "destination": "/checkout-embedded",
+      "permanent": true
+    },
+    {
+      "source": "/pages/equipment-rental",
+      "destination": "/equipment-rental",
+      "permanent": true
+    },
+    {
+      "source": "/pages/equipment-rental.html",
+      "destination": "/equipment-rental",
+      "permanent": true
+    },
+    {
+      "source": "/pages/film-development",
+      "destination": "/film-development",
+      "permanent": true
+    },
+    {
+      "source": "/pages/film-development.html",
+      "destination": "/film-development",
+      "permanent": true
+    },
+    {
+      "source": "/pages/iframe-communicator",
+      "destination": "/iframe-communicator",
+      "permanent": true
+    },
+    {
+      "source": "/pages/iframe-communicator.html",
+      "destination": "/iframe-communicator",
+      "permanent": true
+    },
+    {
+      "source": "/pages/photography-services",
+      "destination": "/photography-services",
+      "permanent": true
+    },
+    {
+      "source": "/pages/photography-services.html",
+      "destination": "/photography-services",
+      "permanent": true
+    },
+    {
+      "source": "/pages/product-detail",
+      "destination": "/product-detail",
+      "permanent": true
+    },
+    {
+      "source": "/pages/product-detail.html",
+      "destination": "/product-detail",
+      "permanent": true
+    },
+    {
+      "source": "/pages/store",
+      "destination": "/store",
+      "permanent": true
+    },
+    {
+      "source": "/pages/store.html",
+      "destination": "/store",
+      "permanent": true
+    },
+    {
+      "source": "/pages/studio-darkroom-rental",
+      "destination": "/studio-darkroom-rental",
+      "permanent": true
+    },
+    {
+      "source": "/pages/studio-darkroom-rental.html",
+      "destination": "/studio-darkroom-rental",
+      "permanent": true
+    },
+    {
+      "source": "/pages/success",
+      "destination": "/success",
+      "permanent": true
+    },
+    {
+      "source": "/pages/success.html",
+      "destination": "/success",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/cart",
+      "destination": "/pages/cart.html"
+    },
+    {
+      "source": "/checkout-embedded",
+      "destination": "/pages/checkout-embedded.html"
+    },
+    {
+      "source": "/equipment-rental",
+      "destination": "/pages/equipment-rental.html"
+    },
+    {
+      "source": "/film-development",
+      "destination": "/pages/film-development.html"
+    },
+    {
+      "source": "/iframe-communicator",
+      "destination": "/pages/iframe-communicator.html"
+    },
+    {
+      "source": "/photography-services",
+      "destination": "/pages/photography-services.html"
+    },
+    {
+      "source": "/product-detail",
+      "destination": "/pages/product-detail.html"
+    },
+    {
+      "source": "/store",
+      "destination": "/pages/store.html"
+    },
+    {
+      "source": "/studio-darkroom-rental",
+      "destination": "/pages/studio-darkroom-rental.html"
+    },
+    {
+      "source": "/success",
+      "destination": "/pages/success.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=31536000; includeSubDomains; preload"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' https://js.authorize.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://accept.authorize.net https://test.authorize.net; frame-src https://accept.authorize.net https://test.authorize.net; frame-ancestors 'self'; base-uri 'self'; form-action 'self' https://accept.authorize.net https://test.authorize.net"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/sync-il-tax-rates",
+      "schedule": "0 7 * * *"
+    }
+  ]
+}

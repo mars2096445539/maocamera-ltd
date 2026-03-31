@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Store - maocamera ltd</title>
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <script src="/js/badge-header.js"></script>
     <style>
     /* 仅保留产品列表相关的样式，删除关于 header-grid 的固定定义 */
@@ -26,6 +26,15 @@
     .product-info { padding: 15px; }
     .product-name { font-weight: 600; margin-bottom: 5px; }
     .product-price { color: #007bff; font-weight: 700; }
+
+    @media (max-width: 900px) {
+        .product-grid {
+            grid-template-columns: 1fr;
+            gap: 18px;
+            margin-top: 20px;
+        }
+        .product-card { border-radius: 12px; }
+    }
 </style>
 </head>
 <body class="page-store">

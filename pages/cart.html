@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Shopping Cart - maocamera ltd</title>
-    <link rel="stylesheet" href="../styles.css">
+    <link rel="stylesheet" href="/styles.css">
     <script src="/js/badge-header.js"></script>
 </head>
 <body>
@@ -25,10 +25,28 @@
                 </div>
                 <div class="summary-row">
                     <span>Shipping</span>
-                    <span class="shipping-free">FREE</span>
+                    <span id="shippingDisplay" class="shipping-free">FREE</span>
                 </div>
+
+                <div id="shippingOptions" style="margin-top: 8px; display: grid; gap: 8px;">
+                    <label id="shippingLabelStandard" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 2px solid #000; border-radius: 10px; cursor: pointer; background: #f3f8f4; transition: all 0.15s;">
+                        <input type="radio" name="shippingMethod" value="standard" checked style="margin-top: 3px; accent-color: #000;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.95rem; color: #111;">Free Standard Shipping</div>
+                            <div style="font-size: 0.82rem; color: #888; margin-top: 2px;">Arrives in 2–5 business days</div>
+                        </div>
+                    </label>
+                    <label id="shippingLabelExpedited" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; background: #fff; transition: all 0.15s;">
+                        <input type="radio" name="shippingMethod" value="expedited" style="margin-top: 3px; accent-color: #000;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.95rem; color: #111;">Expedited Shipping — <span style="color: #c44;">+$11.99</span></div>
+                            <div style="font-size: 0.82rem; color: #888; margin-top: 2px;">Arrives in 2 business days</div>
+                        </div>
+                    </label>
+                </div>
+
                 <div class="summary-row">
-                    <span>Est. Tax (IL 9%)</span>
+                    <span id="taxLabel">Est. Tax</span>
                     <strong id="taxDisplay">$0.00</strong>
                 </div>
                 <hr class="summary-divider">
@@ -36,9 +54,18 @@
                     <span>Total</span>
                     <strong id="totalDisplay">$0.00</strong>
                 </div>
+
+                <div style="margin-top: 14px; display: grid; gap: 8px;">
+                    <input id="shipLine1" type="text" placeholder="Shipping address" style="padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:0.9rem;">
+                    <input id="shipCity" type="text" placeholder="City" style="padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:0.9rem;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px;">
+                        <input id="shipState" type="text" placeholder="State (e.g. IL)" maxlength="20" style="padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:0.9rem;">
+                        <input id="shipZip" type="text" placeholder="ZIP" maxlength="10" style="padding:10px 12px; border:1px solid #ddd; border-radius:8px; font-size:0.9rem;">
+                    </div>
+                </div>
                 
                 <button id="checkoutBtn" class="checkout-button">CHECKING STOCK...</button>
-                <p class="tax-location">Taxes calculated for Urbana, IL 61801</p>
+                <p class="tax-location">Tax is estimated by shipping address.</p>
             </div>
         </aside>
     </div>
@@ -49,6 +76,86 @@
 </footer>
 
 <script>
+let checkoutEnabled = true;
+const IL_ZIP_TAX_RATES = {
+    '61801': 0.09,
+    '61802': 0.09,
+    '61820': 0.09,
+    '61821': 0.09,
+    '61822': 0.09
+};
+
+function normalizeUsState(value) {
+    const raw = String(value || '').trim().toUpperCase();
+    if (raw === 'ILLINOIS') return 'IL';
+    return raw;
+}
+
+function normalizeZip(value) {
+    return String(value || '').trim().replace(/[^0-9]/g, '').slice(0, 5);
+}
+
+function getShippingAddressFromForm() {
+    return {
+        line1: String(document.getElementById('shipLine1')?.value || '').trim(),
+        city: String(document.getElementById('shipCity')?.value || '').trim(),
+        state: normalizeUsState(document.getElementById('shipState')?.value || ''),
+        zip: normalizeZip(document.getElementById('shipZip')?.value || ''),
+        country: 'US'
+    };
+}
+
+function validateShippingAddress(address) {
+    return Boolean(address.line1 && address.city && address.state && address.zip);
+}
+
+function estimateTaxRate(address) {
+    if (address.state !== 'IL') return 0;
+    if (IL_ZIP_TAX_RATES[address.zip] !== undefined) return IL_ZIP_TAX_RATES[address.zip];
+    return 0.0625;
+}
+
+function saveShippingAddress(address) {
+    localStorage.setItem('maocamera_shipping_address', JSON.stringify(address));
+}
+
+function loadSavedShippingAddress() {
+    const raw = localStorage.getItem('maocamera_shipping_address');
+    if (!raw) return;
+    try {
+        const addr = JSON.parse(raw);
+        if (addr.line1) document.getElementById('shipLine1').value = addr.line1;
+        if (addr.city) document.getElementById('shipCity').value = addr.city;
+        if (addr.state) document.getElementById('shipState').value = addr.state;
+        if (addr.zip) document.getElementById('shipZip').value = addr.zip;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+function applyCheckoutClosedState() {
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    checkoutBtn.disabled = true;
+    checkoutBtn.style.backgroundColor = '#666';
+    checkoutBtn.style.cursor = 'not-allowed';
+    checkoutBtn.innerText = 'CHECKOUT CLOSED';
+}
+
+async function loadCheckoutStatus() {
+    try {
+        const res = await fetch('/api/checkout-status');
+        const data = await res.json();
+        checkoutEnabled = !!data.checkoutEnabled;
+    } catch (error) {
+        console.error('Checkout status check failed:', error);
+        checkoutEnabled = false;
+    }
+
+    if (!checkoutEnabled) {
+        applyCheckoutClosedState();
+    }
+}
+
 /**
  * 核心：全局库存校验
  * 遍历购物车，只要有一件商品 canPurchase 为 false，就锁死按钮
@@ -56,6 +163,11 @@
 async function checkCartValidity() {
     const cart = JSON.parse(localStorage.getItem('maocamera_cart')) || [];
     const checkoutBtn = document.getElementById('checkoutBtn');
+
+    if (!checkoutEnabled) {
+        applyCheckoutClosedState();
+        return;
+    }
     
     if (cart.length === 0) {
         checkoutBtn.disabled = true;
@@ -142,13 +254,50 @@ function renderCart() {
     calculateTotals(runningSubtotal);
 }
 
+function isExpeditedSelected() {
+    const radio = document.querySelector('input[name="shippingMethod"][value="expedited"]');
+    return radio ? radio.checked : false;
+}
+
+function getShippingCost() {
+    return isExpeditedSelected() ? 11.99 : 0;
+}
+
+function updateShippingCardStyles() {
+    const stdLabel = document.getElementById('shippingLabelStandard');
+    const expLabel = document.getElementById('shippingLabelExpedited');
+    if (isExpeditedSelected()) {
+        stdLabel.style.borderColor = '#ddd'; stdLabel.style.background = '#fff';
+        expLabel.style.borderColor = '#000'; expLabel.style.background = '#f3f8f4';
+    } else {
+        stdLabel.style.borderColor = '#000'; stdLabel.style.background = '#f3f8f4';
+        expLabel.style.borderColor = '#ddd'; expLabel.style.background = '#fff';
+    }
+}
+
 function calculateTotals(subtotal) {
-    const taxRate = 0.09; // Urbana, IL 税率
+    const shippingAddress = getShippingAddressFromForm();
+    const taxRate = estimateTaxRate(shippingAddress);
+    const shippingCost = getShippingCost();
     const tax = subtotal * taxRate;
-    const total = subtotal + tax;
+    const total = subtotal + tax + shippingCost;
+
+    document.getElementById('taxLabel').innerText = `Est. Tax (${(taxRate * 100).toFixed(2)}%)`;
     document.getElementById('subtotalDisplay').innerText = `$${subtotal.toFixed(2)}`;
     document.getElementById('taxDisplay').innerText = `$${tax.toFixed(2)}`;
     document.getElementById('totalDisplay').innerText = `$${total.toFixed(2)}`;
+
+    const shippingDisplay = document.getElementById('shippingDisplay');
+    if (shippingCost > 0) {
+        shippingDisplay.innerText = `$${shippingCost.toFixed(2)}`;
+        shippingDisplay.className = '';
+        shippingDisplay.style.fontWeight = '700';
+    } else {
+        shippingDisplay.innerText = 'FREE';
+        shippingDisplay.className = 'shipping-free';
+        shippingDisplay.style.fontWeight = '';
+    }
+    updateShippingCardStyles();
 }
 
 async function changeQty(index, delta) {
@@ -185,29 +334,72 @@ function removeItem(index) {
     updateCartAndUI(cart);
 }
 
+function redirectToEmbeddedCheckoutDraft(items, shippingAddress) {
+    if (!Array.isArray(items) || items.length === 0) return false;
+    const shippingMethod = isExpeditedSelected() ? 'expedited' : 'standard';
+    sessionStorage.setItem('maocamera_embedded_checkout_draft', JSON.stringify({
+        items,
+        shippingAddress: shippingAddress || null,
+        billingSameAsShipping: true,
+        shippingMethod
+    }));
+    window.location.href = '/checkout-embedded';
+    return true;
+}
+
+function saveOrderSnapshot(invoiceNumber, items) {
+    if (!invoiceNumber || !Array.isArray(items)) return;
+    const shippingAddress = getShippingAddressFromForm();
+    const shippingMethod = isExpeditedSelected() ? 'expedited' : 'standard';
+    const shippingCost = shippingMethod === 'expedited' ? 11.99 : 0;
+    const subtotal = Number(items.reduce((sum, item) => {
+        const qty = Number.parseInt(item.quantity, 10) || 0;
+        const price = Number.parseFloat(item.price || 0);
+        return sum + qty * price;
+    }, 0).toFixed(2));
+    const taxRate = estimateTaxRate(shippingAddress);
+    const taxAmount = Number((subtotal * taxRate).toFixed(2));
+    const total = Number((subtotal + taxAmount + shippingCost).toFixed(2));
+
+    const snapshots = JSON.parse(localStorage.getItem('maocamera_order_snapshots') || '{}');
+    snapshots[invoiceNumber] = {
+        invoiceNumber,
+        items,
+        shippingAddress,
+        shippingMethod,
+        shippingCost,
+        subtotal,
+        taxRate,
+        taxAmount,
+        total,
+        savedAt: Date.now()
+    };
+    localStorage.setItem('maocamera_order_snapshots', JSON.stringify(snapshots));
+}
+
 // 支付按钮点击逻辑
 document.getElementById('checkoutBtn').onclick = async () => {
     const btn = document.getElementById('checkoutBtn');
     if (btn.disabled) return;
+    if (!checkoutEnabled) {
+        alert('Checkout is temporarily unavailable.');
+        applyCheckoutClosedState();
+        return;
+    }
 
     const currentCart = JSON.parse(localStorage.getItem('maocamera_cart')) || [];
+    const shippingAddress = getShippingAddressFromForm();
+    if (validateShippingAddress(shippingAddress)) {
+        saveShippingAddress(shippingAddress);
+    }
     btn.innerText = "PROCESSING...";
     btn.disabled = true;
 
     try {
-        const response = await fetch('/api/create-checkout-session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ items: currentCart })
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.error || "Checkout failed");
+        if (!redirectToEmbeddedCheckoutDraft(currentCart, shippingAddress)) {
+            throw new Error('Unable to prepare checkout.');
         }
-
-        const session = await response.json();
-        if (session.url) window.location.href = session.url;
+        return;
     } catch (err) {
         alert("Checkout Failed: " + err.message);
         btn.innerText = "CHECKOUT";
@@ -216,8 +408,35 @@ document.getElementById('checkoutBtn').onclick = async () => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    renderCart();
-    checkCartValidity(); // 初始加载即检查
+    loadSavedShippingAddress();
+    ['shipLine1', 'shipCity', 'shipState', 'shipZip'].forEach((id) => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.addEventListener('input', () => {
+                const cart = JSON.parse(localStorage.getItem('maocamera_cart')) || [];
+                const subtotal = cart.reduce((sum, item) => {
+                    return sum + (Number.parseFloat(item.price || 0) * (Number.parseInt(item.quantity, 10) || 0));
+                }, 0);
+                calculateTotals(subtotal);
+            });
+        }
+    });
+
+    // Shipping method radio buttons recalculate totals
+    document.querySelectorAll('input[name="shippingMethod"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            const cart = JSON.parse(localStorage.getItem('maocamera_cart')) || [];
+            const subtotal = cart.reduce((sum, item) => {
+                return sum + (Number.parseFloat(item.price || 0) * (Number.parseInt(item.quantity, 10) || 0));
+            }, 0);
+            calculateTotals(subtotal);
+        });
+    });
+
+    loadCheckoutStatus().finally(() => {
+        renderCart();
+        checkCartValidity(); // 初始加载即检查
+    });
 });
 </script>
 </body>

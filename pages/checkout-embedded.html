@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - maocamera ltd</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .embedded-checkout-wrap { max-width: 980px; margin: 28px auto 48px; padding: 0 20px; }
+        .embedded-checkout-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
+        .embedded-checkout-note { color: #666; margin-bottom: 18px; }
+        .embedded-checkout-brand { letter-spacing: 1.5px; text-transform: uppercase; color: #8a8a8a; font-size: 0.82rem; margin-bottom: 4px; }
+        .embedded-checkout-box { border: 1px solid #e6e6e6; border-radius: 12px; overflow: hidden; background: #fff; }
+        .embedded-checkout-frame { width: 100%; min-height: 820px; border: 0; display: block; }
+        .embedded-checkout-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .embedded-checkout-btn { display: inline-block; background: #f5f5f5; border: 1px solid #ddd; color: #333; border-radius: 8px; text-decoration: none; padding: 10px 16px; font-weight: 600; }
+        .embedded-checkout-form { display: grid; gap: 10px; margin-bottom: 16px; }
+        .embedded-checkout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .embedded-checkout-input { padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; }
+        .embedded-checkout-row { display: flex; align-items: center; gap: 8px; color: #555; font-size: 0.93rem; }
+        .embedded-checkout-start { border: none; background: #007bff; color: #fff; border-radius: 8px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
+        .embedded-checkout-start:disabled { background: #8fb2f3; cursor: not-allowed; }
+        .embedded-checkout-error { color: #c62828; font-size: 0.9rem; min-height: 20px; }
+        .embedded-checkout-iframe-wrap { display: none; }
+        @media (max-width: 720px) {
+            .embedded-checkout-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="badge-header-placeholder"></div>
+
+    <main class="embedded-checkout-wrap">
+        <div class="embedded-checkout-brand">Mao Camera ltd</div>
+        <h1 class="embedded-checkout-title">Secure Checkout</h1>
+        <p class="embedded-checkout-note">Fill your US shipping details below, then continue payment securely with Authorize.net.</p>
+
+        <div class="embedded-checkout-form">
+            <input id="shipLine1" class="embedded-checkout-input" type="text" placeholder="Shipping address">
+            <div class="embedded-checkout-grid">
+                <input id="shipCity" class="embedded-checkout-input" type="text" placeholder="City">
+                <input id="shipState" class="embedded-checkout-input" type="text" placeholder="State (e.g. IL)">
+            </div>
+            <div class="embedded-checkout-grid">
+                <input id="shipZip" class="embedded-checkout-input" type="text" placeholder="US ZIP" maxlength="10">
+                <div class="embedded-checkout-row">
+                    <input id="billingSameAsShipping" type="checkbox" checked>
+                    <label for="billingSameAsShipping">Billing same as shipping</label>
+                </div>
+            </div>
+            <div style="margin-top: 6px; display: grid; gap: 8px;">
+                <label id="shippingLabelStandard" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 2px solid #000; border-radius: 10px; cursor: pointer; background: #f3f8f4; transition: all 0.15s;">
+                    <input type="radio" name="shippingMethod" value="standard" checked style="margin-top: 3px; accent-color: #000;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 0.95rem; color: #111;">Free Standard Shipping</div>
+                        <div style="font-size: 0.82rem; color: #888; margin-top: 2px;">Arrives in 2–5 business days</div>
+                    </div>
+                </label>
+                <label id="shippingLabelExpedited" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 2px solid #ddd; border-radius: 10px; cursor: pointer; background: #fff; transition: all 0.15s;">
+                    <input type="radio" name="shippingMethod" value="expedited" style="margin-top: 3px; accent-color: #000;">
+                    <div>
+                        <div style="font-weight: 700; font-size: 0.95rem; color: #111;">Expedited Shipping — <span style="color: #c44;">+$11.99</span></div>
+                        <div style="font-size: 0.82rem; color: #888; margin-top: 2px;">Arrives in 2 business days</div>
+                    </div>
+                </label>
+            </div>
+            <div class="embedded-checkout-row">
+                <button id="startPaymentBtn" class="embedded-checkout-start" type="button">Continue to Payment</button>
+            </div>
+            <div id="checkoutError" class="embedded-checkout-error"></div>
+        </div>
+
+        <div id="iframeWrap" class="embedded-checkout-iframe-wrap embedded-checkout-box">
+            <iframe id="hostedPaymentIFrame" name="hostedPaymentIFrame" class="embedded-checkout-frame" title="Secure Payment"></iframe>
+        </div>
+
+        <div class="embedded-checkout-actions">
+            <a class="embedded-checkout-btn" href="/cart">Return to Cart</a>
+        </div>
+    </main>
+
+    <form id="embeddedCheckoutForm" method="POST" target="hostedPaymentIFrame" style="display:none;">
+        <input id="embeddedToken" type="hidden" name="token" value="">
+    </form>
+
+    <script src="/js/badge-header.js"></script>
+    <script>
+        function normalizeUsState(value) {
+            const raw = String(value || '').trim().toUpperCase();
+            if (raw === 'ILLINOIS') return 'IL';
+            return raw;
+        }
+
+        function normalizeZip(value) {
+            return String(value || '').trim().replace(/[^0-9]/g, '').slice(0, 5);
+        }
+
+        function getShippingAddressFromForm() {
+            return {
+                line1: String(document.getElementById('shipLine1')?.value || '').trim(),
+                city: String(document.getElementById('shipCity')?.value || '').trim(),
+                state: normalizeUsState(document.getElementById('shipState')?.value || ''),
+                zip: normalizeZip(document.getElementById('shipZip')?.value || ''),
+                country: 'US'
+            };
+        }
+
+        function validateShippingAddress(address) {
+            return Boolean(address.line1 && address.city && address.state && address.zip);
+        }
+
+        function loadSavedShippingAddress() {
+            const raw = localStorage.getItem('maocamera_shipping_address');
+            if (!raw) return;
+            try {
+                const addr = JSON.parse(raw);
+                if (addr.line1) document.getElementById('shipLine1').value = addr.line1;
+                if (addr.city) document.getElementById('shipCity').value = addr.city;
+                if (addr.state) document.getElementById('shipState').value = addr.state;
+                if (addr.zip) document.getElementById('shipZip').value = addr.zip;
+            } catch (_) {}
+        }
+
+        function applyDraftShippingAddress(draft) {
+            const addr = draft?.shippingAddress;
+            if (!addr) return;
+            if (addr.line1) document.getElementById('shipLine1').value = addr.line1;
+            if (addr.city) document.getElementById('shipCity').value = addr.city;
+            if (addr.state) document.getElementById('shipState').value = addr.state;
+            if (addr.zip) document.getElementById('shipZip').value = addr.zip;
+            if (draft.shippingMethod === 'expedited') {
+                const expRadio = document.querySelector('input[name="shippingMethod"][value="expedited"]');
+                if (expRadio) expRadio.checked = true;
+                const stdLabel = document.getElementById('shippingLabelStandard');
+                const expLabel = document.getElementById('shippingLabelExpedited');
+                if (stdLabel) { stdLabel.style.borderColor = '#ddd'; stdLabel.style.background = '#fff'; }
+                if (expLabel) { expLabel.style.borderColor = '#000'; expLabel.style.background = '#f3f8f4'; }
+            }
+        }
+
+        function submitAuthorizeHostedPayment(paymentPageUrl, token) {
+            const form = document.getElementById('embeddedCheckoutForm');
+            const tokenInput = document.getElementById('embeddedToken');
+            form.action = paymentPageUrl;
+            tokenInput.value = token;
+            form.submit();
+        }
+
+        function getActiveInvoiceNumber() {
+            const raw = sessionStorage.getItem('maocamera_embedded_checkout_session');
+            if (!raw) return '';
+            try {
+                const parsed = JSON.parse(raw);
+                return String(parsed?.invoiceNumber || '').trim();
+            } catch (_) {
+                return '';
+            }
+        }
+
+        function handlePaymentCompleted() {
+            const invoiceNumber = getActiveInvoiceNumber();
+            if (invoiceNumber) {
+                sessionStorage.removeItem('maocamera_embedded_checkout_draft');
+                window.location.href = `/success?invoice=${encodeURIComponent(invoiceNumber)}`;
+                return;
+            }
+            window.location.href = '/success';
+        }
+
+        function showError(message) {
+            document.getElementById('checkoutError').innerText = message || '';
+        }
+
+        function getDraft() {
+            const rawDraft = sessionStorage.getItem('maocamera_embedded_checkout_draft');
+            if (!rawDraft) return null;
+            try {
+                return JSON.parse(rawDraft);
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function ensureItemsFromDraft(draft) {
+            if (Array.isArray(draft?.items) && draft.items.length > 0) return draft.items;
+            const cart = JSON.parse(localStorage.getItem('maocamera_cart') || '[]');
+            return Array.isArray(cart) ? cart : [];
+        }
+
+        async function startHostedPayment() {
+            const btn = document.getElementById('startPaymentBtn');
+            const draft = getDraft();
+            const items = ensureItemsFromDraft(draft);
+            const shippingAddress = getShippingAddressFromForm();
+            const billingSameAsShipping = !!document.getElementById('billingSameAsShipping')?.checked;
+            const expRadio = document.querySelector('input[name="shippingMethod"][value="expedited"]');
+            const shippingMethod = expRadio?.checked ? 'expedited' : 'standard';
+
+            if (!Array.isArray(items) || items.length === 0) {
+                showError('Your cart is empty.');
+                return;
+            }
+
+            if (!validateShippingAddress(shippingAddress)) {
+                showError('Please fill shipping address, city, state and ZIP.');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Preparing Payment...';
+            showError('');
+
+            try {
+                localStorage.setItem('maocamera_shipping_address', JSON.stringify(shippingAddress));
+                sessionStorage.setItem('maocamera_embedded_checkout_draft', JSON.stringify({
+                    items,
+                    shippingAddress,
+                    billingSameAsShipping,
+                    shippingMethod
+                }));
+
+                const response = await fetch('/api/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items, shippingAddress, billingSameAsShipping, shippingMethod })
+                });
+
+                const session = await response.json();
+                if (!response.ok) {
+                    throw new Error(session?.error || 'Checkout failed.');
+                }
+
+                if (!session?.paymentPageUrl || !session?.token) {
+                    throw new Error('Missing payment redirect information.');
+                }
+
+                sessionStorage.setItem('maocamera_embedded_checkout_session', JSON.stringify({
+                    paymentPageUrl: session.paymentPageUrl,
+                    invoiceNumber: session.invoiceNumber || null
+                }));
+
+                const iframeWrap = document.getElementById('iframeWrap');
+                iframeWrap.style.display = 'block';
+
+                submitAuthorizeHostedPayment(session.paymentPageUrl, session.token);
+            } catch (error) {
+                showError(error.message || 'Checkout failed.');
+                btn.disabled = false;
+                btn.innerText = 'Continue to Payment';
+            }
+        }
+
+        (function initEmbeddedCheckout() {
+            loadSavedShippingAddress();
+
+            const draft = getDraft();
+            if (draft?.shippingAddress) {
+                applyDraftShippingAddress(draft);
+            }
+
+            if (draft && typeof draft.billingSameAsShipping === 'boolean') {
+                document.getElementById('billingSameAsShipping').checked = !!draft.billingSameAsShipping;
+            }
+
+            document.getElementById('startPaymentBtn').addEventListener('click', startHostedPayment);
+
+            // Shipping card highlight on radio change
+            document.querySelectorAll('input[name="shippingMethod"]').forEach((radio) => {
+                radio.addEventListener('change', () => {
+                    const stdLabel = document.getElementById('shippingLabelStandard');
+                    const expLabel = document.getElementById('shippingLabelExpedited');
+                    const isExp = document.querySelector('input[name="shippingMethod"][value="expedited"]')?.checked;
+                    if (isExp) {
+                        stdLabel.style.borderColor = '#ddd'; stdLabel.style.background = '#fff';
+                        expLabel.style.borderColor = '#000'; expLabel.style.background = '#f3f8f4';
+                    } else {
+                        stdLabel.style.borderColor = '#000'; stdLabel.style.background = '#f3f8f4';
+                        expLabel.style.borderColor = '#ddd'; expLabel.style.background = '#fff';
+                    }
+                });
+            });
+        })();
+
+        window.AuthorizeNetIFrame = {
+            onReceiveCommunication: function (querystr) {
+                if (!querystr) return;
+                const params = new URLSearchParams(querystr);
+                const action = params.get('action');
+
+                if (action === 'cancel') {
+                    window.location.href = '/cart';
+                    return;
+                }
+
+                if (action === 'transactResponse' || action === 'successfulSave') {
+                    handlePaymentCompleted();
+                    return;
+                }
+
+                if (action === 'resizeWindow') {
+                    const height = parseInt(params.get('height'), 10);
+                    const frame = document.getElementById('hostedPaymentIFrame');
+                    if (frame && Number.isInteger(height) && height > 0) {
+                        frame.style.minHeight = `${Math.max(height, 700)}px`;
+                    }
+                }
+            }
+        };
+    </script>
+</body>
+</html>

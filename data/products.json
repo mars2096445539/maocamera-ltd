@@ -4,131 +4,187 @@
     "brand": "Marsace",
     "name": "XB-2R BALLHEAD",
     "cn_name": "xb2r球形云台",
-    "price": "159.00",
-    "stock": 2,
+    "price": "127.20",
+    "stock": 1,
     "category": "Ballhead",
     "cover_image": "/img/products/xb2r-main.jpg",
-    "specs": { "type": "Ballhead", "quick_release": "Arca-Swiss", "Base thread": "3/8\"" },
-    "detail_images": ["/img/products/xb2r-detail-1.jpg"]
+    "specs": {
+      "type": "Ballhead",
+      "quick_release": "Arca-Swiss",
+      "Base thread": "3/8\""
+    },
+    "detail_images": [
+      "/img/products/xb2r-detail-1.jpg"
+    ]
   },
   {
     "id": "xb-1r",
     "brand": "Marsace",
     "name": "XB-1R BALLHEAD",
     "cn_name": "xb1r",
-    "price": "139.00",
+    "price": "111.20",
     "stock": 2,
     "category": "Ballhead",
     "cover_image": "/img/products/xb1r-main.jpg",
-    "specs": { "type": "Ballhead", "quick_release": "Arca-Swiss", "Base thread": "3/8\"" },
-    "detail_images": ["/img/products/xb1r-detail-1.jpg"]
+    "specs": {
+      "type": "Ballhead",
+      "quick_release": "Arca-Swiss",
+      "Base thread": "3/8\""
+    },
+    "detail_images": [
+      "/img/products/xb1r-detail-1.jpg"
+    ]
   },
   {
     "id": "sv35",
     "brand": "Marsace",
     "name": "SV35 FLUIDHEAD",
     "cn_name": "sv35液压云台 (曼富图规格)",
-    "price": "449.00",
+    "price": "359.20",
     "stock": 3,
     "category": "Fluidhead",
     "cover_image": "/img/products/sv35-main.jpg",
-    "specs": { "type": "Fluidhead", "quick_release": "Manfrotto", "Base thread": "3/8\""  },
-    "detail_images": ["/img/products/sv35-detail-1.jpg"]
+    "specs": {
+      "type": "Fluidhead",
+      "quick_release": "Manfrotto",
+      "Base thread": "3/8\""
+    },
+    "detail_images": [
+      "/img/products/sv35-detail-1.jpg"
+    ]
   },
   {
     "id": "md-3",
     "brand": "Marsace",
     "name": "MD-3 GEARHEAD",
     "cn_name": "md3齿轮云台",
-    "price": "179.00",
+    "price": "143.20",
     "stock": 4,
     "category": "Gearhead",
     "cover_image": "/img/products/md3-main.jpg",
-    "specs": { "type": "Gearhead", "adjustment": "3-Way", "Base thread": "3/8"  },
-    "detail_images": ["/img/products/md3-detail-1.jpg"]
+    "specs": {
+      "type": "Gearhead",
+      "adjustment": "3-Way",
+      "Base thread": "3/8"
+    },
+    "detail_images": [
+      "/img/products/md3-detail-1.jpg"
+    ]
   },
   {
     "id": "md-4",
     "brand": "Marsace",
     "name": "MD-4 GEARHEAD",
     "cn_name": "md4齿轮云台",
-    "price": "249.00",
+    "price": "199.20",
     "stock": 2,
     "category": "Gearhead",
     "cover_image": "/img/products/md4-main.jpg",
-    "specs": { "type": "Gearhead", "adjustment": "4-Way" },
-    "detail_images": ["/img/products/md4-detail-1.jpg"]
+    "specs": {
+      "type": "Gearhead",
+      "adjustment": "4-Way"
+    },
+    "detail_images": [
+      "/img/products/md4-detail-1.jpg"
+    ]
   },
   {
     "id": "pt-14",
     "brand": "Marsace",
     "name": "PT-14 BALLHEAD COMBO",
     "cn_name": "pt14球套",
-    "price": "159.00",
-    "stock": 2,
+    "price": "127.20",
+    "stock": 1,
     "category": "Combo",
     "cover_image": "/img/products/pt14-main.jpg",
-    "specs": { "type": "Tripod Combo" },
-    "detail_images": ["/img/products/pt14-detail-1.jpg"]
+    "specs": {
+      "type": "Tripod Combo"
+    },
+    "detail_images": [
+      "/img/products/pt14-detail-1.jpg"
+    ]
   },
   {
     "id": "pt-24",
     "brand": "Marsace",
     "name": "PT-24 BALLHEAD COMBO",
     "cn_name": "pt24球套",
-    "price": "179.00",
-    "stock": 4,
+    "price": "143.20",
+    "stock": 1,
     "category": "Combo",
     "cover_image": "/img/products/pt24-main.jpg",
-    "specs": { "type": "Tripod Combo" },
-    "detail_images": ["/img/products/pt24-detail-1.jpg"]
+    "specs": {
+      "type": "Tripod Combo"
+    },
+    "detail_images": [
+      "/img/products/pt24-detail-1.jpg"
+    ]
   },
   {
     "id": "mt-24",
     "brand": "Marsace",
     "name": "MT-24 TRIPOD ONLY",
     "cn_name": "mt24单架子",
-    "price": "249.00",
-    "stock": 3,
+    "price": "199.20",
+    "stock": 1,
     "category": "Tripod",
     "cover_image": "/img/products/mt24-main.jpg",
-    "specs": { "material": "Carbon Fiber", "sections": "4" },
-    "detail_images": ["/img/products/mt24-detail-1.jpg"]
+    "specs": {
+      "material": "Carbon Fiber",
+      "sections": "4"
+    },
+    "detail_images": [
+      "/img/products/mt24-detail-1.jpg"
+    ]
   },
   {
     "id": "xt-15",
     "brand": "Marsace",
     "name": "XT-15 BALLHEAD COMBO",
     "cn_name": "xt15球套",
-    "price": "159.00",
-    "stock": 2,
+    "price": "127.20",
+    "stock": 1,
     "category": "Combo",
     "cover_image": "/img/products/xt15-main.jpg",
-    "specs": { "type": "Travel Combo" },
-    "detail_images": ["/img/products/xt15-detail-1.jpg"]
+    "specs": {
+      "type": "Travel Combo"
+    },
+    "detail_images": [
+      "/img/products/xt15-detail-1.jpg"
+    ]
   },
   {
     "id": "mt-34",
     "brand": "Marsace",
     "name": "MT-34 TRIPOD ONLY",
     "cn_name": "mt34单架子",
-    "price": "299.00",
+    "price": "239.20",
     "stock": 1,
     "category": "Tripod",
     "cover_image": "/img/products/mt34-main.jpg",
-    "specs": { "material": "Carbon Fiber", "load": "Heavy Duty" },
-    "detail_images": ["/img/products/mt34-detail-1.jpg"]
+    "specs": {
+      "material": "Carbon Fiber",
+      "load": "Heavy Duty"
+    },
+    "detail_images": [
+      "/img/products/mt34-detail-1.jpg"
+    ]
   },
   {
     "id": "mt-33s",
     "brand": "Marsace",
     "name": "MT-33S TRIPOD ONLY",
     "cn_name": "mt33s单架子",
-    "price": "279.00",
+    "price": "223.20",
     "stock": 1,
     "category": "Tripod",
     "cover_image": "/img/products/mt33s-main.jpg",
-    "specs": { "material": "Carbon Fiber", "style": "Heavy duty" },
-    "detail_images": ["/img/products/mt33s-detail-1.jpg"]
+    "specs": {
+      "material": "Carbon Fiber",
+      "style": "Heavy duty"
+    },
+    "detail_images": [
+      "/img/products/mt33s-detail-1.jpg"
+    ]
   }
 ]

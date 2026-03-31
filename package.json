@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "stock:list": "node scripts/update-stock.js list",
+    "stock:set": "node scripts/update-stock.js set",
+    "stock:inc": "node scripts/update-stock.js inc",
+    "stock:dec": "node scripts/update-stock.js dec"
   },
   "keywords": [],
   "author": "",
